@@ -2,6 +2,8 @@ package com.roaster.roaster;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.List;
+
 import org.junit.Before;
 import org.junit.FixMethodOrder;
 import org.junit.jupiter.api.Test;
@@ -57,12 +59,21 @@ public class UserControllerTest {
 		
 	}
 	
-	
 	@Test
 	public void postUser_whenUserIsValid_receiveSuccessMessage() {
 		User user = createValidUser(); 	
 		ResponseEntity<GenericResponse> response = testRestTemplate.postForEntity(API_1_0_USERS, user, GenericResponse.class); 
 		assertThat(response.getBody().getMessage()).isNotNull();  
+	}
+	
+	@Test
+	public void postUser_whenUserIsValid_passwordIsHashedInDatabase() {
+		User user = createValidUser(); 
+		testRestTemplate.postForEntity(API_1_0_USERS, user, Object.class); 
+		List<User> users = userRepository.findAll(); // retrieve all user in db
+		User inDB = users.get(0); // get the 1st and the only one
+		assertThat(inDB.getPassword()).isNotEqualTo(user.getPassword()); 
+		
 	}
 	
 	private User createValidUser() {
