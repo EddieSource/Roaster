@@ -14,6 +14,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ActiveProfiles;
 
+import com.roaster.roaster.shared.GenericResponse;
 import com.roaster.roaster.user.User;
 import com.roaster.roaster.user.UserRepository;
 
@@ -54,6 +55,14 @@ public class UserControllerTest {
 		testRestTemplate.postForEntity(API_1_0_USERS, user, Object.class); 
 		assertThat(userRepository.count()).isEqualTo(1); 
 		
+	}
+	
+	
+	@Test
+	public void postUser_whenUserIsValid_receiveSuccessMessage() {
+		User user = createValidUser(); 	
+		ResponseEntity<GenericResponse> response = testRestTemplate.postForEntity(API_1_0_USERS, user, GenericResponse.class); 
+		assertThat(response.getBody().getMessage()).isNotNull();  
 	}
 	
 	private User createValidUser() {
