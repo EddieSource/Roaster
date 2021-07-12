@@ -1,10 +1,21 @@
 import React, { useState } from 'react'
 
-const UserSignupPage = () => {
+const UserSignupPage = (props) => {
     const [name, setName] = useState('')
     const [username, setUsername] = useState('')
     const [password, setPassword] = useState('')
     const [cpassword, setCpassword] = useState('')
+
+
+    const onClickSignup = () => {
+        const user = {
+            // field is align with java
+            username: username, 
+            displayName: name, 
+            password: password
+        }
+        props.actions.postSignup(user)
+    }
 
     return(
         <div>
@@ -38,7 +49,7 @@ const UserSignupPage = () => {
                 }}/>
             </div>
             <div>
-                <button>Sign Up</button>
+                <button onClick = {() => onClickSignup()}>Sign Up</button>
             </div>
         </div>
     )
