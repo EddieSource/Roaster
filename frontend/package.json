@@ -39,5 +39,4 @@
   "jest": {
     "resetMocks": false
   }
-
 }

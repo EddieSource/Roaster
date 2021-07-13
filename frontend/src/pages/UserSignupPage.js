@@ -1,10 +1,16 @@
 import React, { useState } from 'react'
 
-const UserSignupPage = (props) => {
+const UserSignupPage = ({
+    actions = {
+        postSignup: () => new Promise((resolve, reject) => {
+            resolve({})
+        })}
+    }) => {
     const [name, setName] = useState('')
     const [username, setUsername] = useState('')
     const [password, setPassword] = useState('')
     const [cpassword, setCpassword] = useState('')
+    const [pendingApiCall, setPendingApiCall] = useState(false)
 
 
     const onClickSignup = () => {
@@ -14,7 +20,13 @@ const UserSignupPage = (props) => {
             displayName: name, 
             password: password
         }
-        props.actions.postSignup(user)
+        setPendingApiCall(true)
+        actions.postSignup(user).then((res) => {
+            setPendingApiCall(false)
+        })
+        .catch(err => {
+            setPendingApiCall(false)
+        })
     }
 
     return(
@@ -49,7 +61,7 @@ const UserSignupPage = (props) => {
                 }}/>
             </div>
             <div>
-                <button onClick = {() => onClickSignup()}>Sign Up</button>
+                <button onClick = {() => onClickSignup()} disabled={pendingApiCall}>Sign Up</button>
             </div>
         </div>
     )
