@@ -3,6 +3,7 @@ package com.roaster.roaster;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
+import java.util.stream.IntStream;
 
 import org.junit.Before;
 import org.junit.FixMethodOrder;
@@ -16,6 +17,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ActiveProfiles;
 
+import com.roaster.roaster.error.ApiError;
 import com.roaster.roaster.shared.GenericResponse;
 import com.roaster.roaster.user.User;
 import com.roaster.roaster.user.UserRepository;
@@ -124,6 +126,20 @@ public class UserControllerTest {
 		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST); 
 	}
 	
+	@Test
+	public void postUser_whenUserIsInvalid_receiveApiError() {
+		User user = new User(); 
+		ResponseEntity<ApiError> response = postSignup(user, ApiError.class); 
+		assertThat(response.getBody().getUrl()).isEqualTo(API_1_0_USERS); 
+	}
+	
+	
+	@Test
+	public void postUser_whenUserIsInvalid_receiveApiErrorWithValidationErrors() {
+		User user = new User(); 
+		ResponseEntity<ApiError> response = postSignup(user, ApiError.class); 
+		assertThat(response.getBody().getValidationErrors().size()).isEqualTo(3); 
+	}
 	
 	public <T> ResponseEntity<T> postSignup(Object request, Class<T> response){
 		return testRestTemplate.postForEntity(API_1_0_USERS, request, response); 
