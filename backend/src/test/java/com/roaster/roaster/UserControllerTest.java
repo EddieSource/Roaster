@@ -2,11 +2,13 @@ package com.roaster.roaster;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+
 import java.util.List;
+import java.util.Map;
 import java.util.stream.IntStream;
 
-import org.junit.Before;
 import org.junit.FixMethodOrder;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.runners.MethodSorters;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,7 +40,7 @@ public class UserControllerTest {
 	@Autowired
 	UserRepository userRepository; 
 	
-	@Before
+	@BeforeEach
 	public void cleanup() {
 		userRepository.deleteAll(); 	// delete all entries of users in database
 	}
@@ -139,6 +141,16 @@ public class UserControllerTest {
 		User user = new User(); 
 		ResponseEntity<ApiError> response = postSignup(user, ApiError.class); 
 		assertThat(response.getBody().getValidationErrors().size()).isEqualTo(3); 
+	}
+	
+	
+	@Test
+	public void postUser_whenAnotherUserHasSameUsername_receiveBadRequest() {
+		userRepository.save(createValidUser()); 
+		
+		User user = createValidUser(); 
+		ResponseEntity<Object> response = postSignup(user,Object.class); 
+		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST); 
 	}
 	
 	public <T> ResponseEntity<T> postSignup(Object request, Class<T> response){
