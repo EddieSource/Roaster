@@ -143,6 +143,34 @@ public class UserControllerTest {
 		assertThat(response.getBody().getValidationErrors().size()).isEqualTo(3); 
 	}
 	
+	@Test
+	public void postUser_whenUserHasNullUsername_receiveMessageOfNullErrorForUsername() {
+		User user = createValidUser(); 
+		user.setUsername(null);
+		ResponseEntity<ApiError> response = postSignup(user, ApiError.class); 
+		Map<String, String> validationErrors = response.getBody().getValidationErrors(); 
+		assertThat(validationErrors.get("username")).isEqualTo("Username cannot be null"); 
+	}
+	
+	@Test
+	public void postUser_whenUserHasNullPassword_receiveMessageOfNullErrorForPassword() {
+		User user = createValidUser(); 
+		user.setPassword(null);
+		ResponseEntity<ApiError> response = postSignup(user, ApiError.class); 
+		Map<String, String> validationErrors = response.getBody().getValidationErrors(); 
+		assertThat(validationErrors.get("password")).isEqualTo("Password cannot be null"); 
+	}
+	
+	@Test
+	public void postUser_whenUserHasInvalidLengthUsername_receiveGenericMessageOfSizeError() {
+		User user = createValidUser(); 
+		user.setUsername("abc");
+		ResponseEntity<ApiError> response = postSignup(user, ApiError.class); 
+		Map<String, String> validationErrors = response.getBody().getValidationErrors(); 
+		assertThat(validationErrors.get("username")).isEqualTo("size must be between 4 and 255"); 
+	}
+	
+	
 	
 	@Test
 	public void postUser_whenAnotherUserHasSameUsername_receiveBadRequest() {
@@ -151,6 +179,16 @@ public class UserControllerTest {
 		User user = createValidUser(); 
 		ResponseEntity<Object> response = postSignup(user,Object.class); 
 		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST); 
+	}
+	
+	@Test
+	public void postUser_whenAnotherUserHasSameUsername_receiveMessageOfDuplicateUsername() {
+		userRepository.save(createValidUser()); 
+		
+		User user = createValidUser(); 
+		ResponseEntity<ApiError> response = postSignup(user,ApiError.class); 
+		Map<String, String> validationErrors = response.getBody().getValidationErrors(); 
+		assertThat(validationErrors.get("username")).isEqualTo("This name is in use"); 
 	}
 	
 	public <T> ResponseEntity<T> postSignup(Object request, Class<T> response){

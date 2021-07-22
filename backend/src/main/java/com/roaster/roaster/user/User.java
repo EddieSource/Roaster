@@ -22,7 +22,7 @@ public class User {
 	private long id; 
 	
 	// set constraint
-	@NotNull
+	@NotNull(message = "{roaster.constraints.username.NotNull.message}")
 	@Size(min = 4, max=255)
 	@UniqueUsername
 	private String username; 
@@ -31,7 +31,7 @@ public class User {
 	@Size(min = 4, max=255)
 	private String displayName; 
 	
-	@NotNull
+	@NotNull(message = "{roaster.constraints.password.NotNull.message}")
 	@Size(min = 8, max=255)
 	private String password; 
 }

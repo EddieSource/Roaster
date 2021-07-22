@@ -12,7 +12,7 @@ import javax.validation.Payload;
 @Target(ElementType.FIELD)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface UniqueUsername {
-	String message() default "";
+	String message() default "{roaster.constraints.username.UniqueUsername.message}";
 
 	Class<?>[] groups() default { };
 
