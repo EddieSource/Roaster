@@ -1,5 +1,5 @@
 import React from 'react'
-import { render, cleanup, fireEvent } from '@testing-library/react'
+import { render, cleanup, fireEvent, waitFor } from '@testing-library/react'
 import '@testing-library/jest-dom/extend-expect'
 import UserSignUpPage from './UserSignupPage'
 import UserSignupPage from './UserSignupPage'
@@ -132,6 +132,25 @@ describe("UserSignupPage", () => {
 
             
             expect(actions.postSignup).toHaveBeenCalledTimes(1)
+        })
+
+        it('displays validation error for displayName when error is received for the field', async() => {
+            const actions = {postSignup:jest.fn().mockRejectedValue({
+                response: {
+                    data: {
+                        validationErrors: {
+                            displayName: "must not be null"
+                        }
+                    }
+                }
+            })}
+            const { queryByText } = setupForSubmit({ actions })
+            fireEvent.click(button)
+
+            const errorMessage = await waitFor(() => queryByText('must not be null'))
+            console.log(errorMessage)
+            expect(errorMessage).toBeInTheDocument()
+            
         })
 
         

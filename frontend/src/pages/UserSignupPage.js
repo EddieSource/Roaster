@@ -11,7 +11,7 @@ const UserSignupPage = ({
     const [password, setPassword] = useState('')
     const [cpassword, setCpassword] = useState('')
     const [pendingApiCall, setPendingApiCall] = useState(false)
-
+    const [errors, setErrors] = useState({})
 
     const onClickSignup = () => {
         const user = {
@@ -24,8 +24,13 @@ const UserSignupPage = ({
         actions.postSignup(user).then((res) => {
             setPendingApiCall(false)
         })
-        .catch(err => {
+        .catch(apiError => {
+            let err = {...errors}
+            if(apiError.response.data && apiError.response.data.validationErrors){
+                err = {...apiError.response.data.validationErrors}
+            }
             setPendingApiCall(false)
+            setErrors(err)
         })
     }
 
@@ -40,6 +45,9 @@ const UserSignupPage = ({
                 }}/>
             </div>
             <div>
+                {errors.displayName}
+            </div>
+            <div>
                 <input placeholder="Your username" 
                 value = {username} 
                 onChange = {(input)=> {
@@ -47,11 +55,17 @@ const UserSignupPage = ({
                 }}/>
             </div>
             <div>
+                {errors.username}
+            </div>
+            <div>
                 <input placeholder="Your password" type="password" 
                 value = {password}
                 onChange = {(input)=> {
                     setPassword(input.target.value)
                 }}/>
+            </div>
+            <div>
+                {errors.password}
             </div>
             <div>
                 <input placeholder="Repeat Your password" type="password"
