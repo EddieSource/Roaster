@@ -1,5 +1,6 @@
 package com.roaster.roaster.user;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -12,5 +13,8 @@ public class LoginController {
 	void handleLogin() {
 		
 	}
+	
+	// request is not at the stage of being passed to controller so use internal error forwarding mechanisms
+	
 
 }
