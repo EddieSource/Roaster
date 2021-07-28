@@ -34,4 +34,26 @@ describe("LoginPage", () => {
       expect(button).toBeInTheDocument();
     });
   });
+  describe("Interactions", () => {
+    const changeEvent = (content) => {
+      return {
+        target: {
+          value: content,
+        },
+      };
+    };
+    it("sets the username value into state", () => {
+      const { queryByPlaceholderText } = render(<LoginPage />);
+      const usernameInput = queryByPlaceholderText("Your username");
+      fireEvent.change(usernameInput, changeEvent("my-user-name"));
+      expect(usernameInput).toHaveValue("my-user-name");
+    });
+
+    it("sets the password value into state", () => {
+      const { queryByPlaceholderText } = render(<LoginPage />);
+      const passwordInput = queryByPlaceholderText("Your username");
+      fireEvent.change(passwordInput, changeEvent("P4ssword"));
+      expect(passwordInput).toHaveValue("P4ssword");
+    });
+  });
 });
