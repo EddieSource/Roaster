@@ -1,15 +1,46 @@
 import React, { useState } from "react";
 import Input from "../components/Input";
 
-const LoginPage = () => {
+const defaultProps = {
+  actions: {
+    postLogin: () => new Promise((resolve, reject) => resolve({})),
+  },
+};
+
+const LoginPage = (props) => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [apiError, setApiError] = useState(undefined);
+
   const onChangeUsernmae = (e) => {
+    setApiError(undefined);
     setUsername(e.target.value);
   };
   const onChangePassword = (e) => {
+    setApiError(undefined);
     setPassword(e.target.value);
   };
+  const onClickLogin = () => {
+    const body = {
+      username: username,
+      password: password,
+    };
+    props.actions.postLogin(body).catch((error) => {
+      if (error.response) {
+        setApiError(error.response.data.message);
+      }
+    });
+  };
+
+  let disableSubmit = false;
+
+  if (username === "") {
+    disableSubmit = true;
+  }
+
+  if (password === "") {
+    disableSubmit = true;
+  }
 
   return (
     <div className="container">
@@ -31,11 +62,24 @@ const LoginPage = () => {
           onChange={onChangePassword}
         />
       </div>
+      {apiError && (
+        <div className="col-12 mb-3">
+          <div className="alert alert-danger">{apiError}</div>
+        </div>
+      )}
       <div className="text-center">
-        <button className="btn btn-primary">Login</button>
+        <button
+          className="btn btn-primary"
+          onClick={onClickLogin}
+          disabled={disableSubmit}
+        >
+          Login
+        </button>
       </div>
     </div>
   );
 };
+
+LoginPage.defaultProps = defaultProps;
 
 export default LoginPage;
