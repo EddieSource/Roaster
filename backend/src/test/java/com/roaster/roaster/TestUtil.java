@@ -8,6 +8,7 @@ public class TestUtil {
 		user.setDisplayName("test-display"); 
 		user.setUsername("test-user");
 		user.setPassword("P4ssword");
+		user.setImage("profile-image.png");
 		return user; 
 	}
 }
