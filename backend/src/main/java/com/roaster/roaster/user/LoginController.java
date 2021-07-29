@@ -15,10 +15,10 @@ import com.fasterxml.jackson.annotation.JsonView;
 import com.roaster.roaster.shared.CurrentUser;
 
 @RestController
+@CrossOrigin(origins = "http://localhost:3000")
 public class LoginController {
 	
 	@PostMapping("/api/1.0/login")
-	@CrossOrigin(origins = "http://localhost:3000")
 	@JsonView(Views.Base.class)
 	User handleLogin(@CurrentUser User loggedInUser) {
 		return loggedInUser; 

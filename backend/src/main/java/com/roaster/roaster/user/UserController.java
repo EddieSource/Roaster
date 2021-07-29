@@ -23,13 +23,13 @@ import com.roaster.roaster.shared.GenericResponse;
 
 // handling for HTTP requests
 @RestController
+@CrossOrigin(origins = "http://localhost:3000")
 public class UserController {
 	
 	@Autowired
 	UserService userService; 
 	
 	@PostMapping("/api/1.0/users")
-	@CrossOrigin(origins = "http://localhost:3000")
 	GenericResponse createUser(@Valid @RequestBody User user) {
 		userService.save(user); 
 		return new GenericResponse("User saved"); 
