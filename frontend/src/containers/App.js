@@ -19,8 +19,18 @@ function App() {
       <div className="container">
         <Switch>
           <Route exact path="/" component={HomePage} />
-          <Route exact path="/login" component={LoginPage} />
-          <Route exact path="/signup" component={UserSignupPage} />
+          <Route
+            exact
+            path="/login"
+            component={(props) => <LoginPage {...props} actions={actions} />}
+          />
+          <Route
+            exact
+            path="/signup"
+            component={(props) => (
+              <UserSignupPage {...props} actions={actions} />
+            )}
+          />
           <Route exact path="/:username" component={UserPage} />
         </Switch>
       </div>

@@ -30,8 +30,9 @@ const LoginPage = (props) => {
     setPendingApiCall(true);
     props.actions
       .postLogin(body)
-      .then((responsse) => {
+      .then((response) => {
         setPendingApiCall(false);
+        props.history.push("/");
       })
       .catch((error) => {
         if (error.response) {

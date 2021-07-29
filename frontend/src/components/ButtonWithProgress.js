@@ -8,7 +8,9 @@ const ButtonWithProgess = (props) => {
       disabled={props.disabled}
     >
       {props.pendingApiCall && (
-        <div className="spinner-border text-light spinner-border-sm mr-sm-1"></div>
+        <div className="spinner-border text-light spinner-border-sm mr-sm-1">
+          <span className="sr-only">Loading...</span>
+        </div>
       )}
       {props.text}
     </button>

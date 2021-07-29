@@ -2,14 +2,19 @@ import React, { useState } from "react";
 import Input from "../components/Input";
 import ButtonWithProgress from "../components/ButtonWithProgress";
 
-const UserSignupPage = ({
-  actions = {
+const defaultProps = {
+  actions: {
     postSignup: () =>
       new Promise((resolve, reject) => {
         resolve({});
       }),
   },
-}) => {
+  history: {
+    push: () => {},
+  },
+};
+
+const UserSignupPage = (props) => {
   const [displayName, setDisplayName] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -26,10 +31,11 @@ const UserSignupPage = ({
       password: password,
     };
     setPendingApiCall(true);
-    actions
+    props.actions
       .postSignup(user)
       .then((res) => {
         setPendingApiCall(false);
+        props.history.push("/");
       })
       .catch((apiError) => {
         if (apiError.response.data && apiError.response.data.validationErrors) {
@@ -114,21 +120,11 @@ const UserSignupPage = ({
           pendingApiCall={pendingApiCall}
           text="Sign Up"
         />
-        {/* <button
-          className="btn btn-primary"
-          onClick={() => onClickSignup()}
-          disabled={pendingApiCall || !passwordRepeatConfirmed}
-        >
-          {pendingApiCall && (
-            <div className="spinner-border text-light spinner-border-sm mr-sm-1">
-              <span className="sr-only">Loading</span>
-            </div>
-          )}
-          Sign Up
-        </button> */}
       </div>
     </div>
   );
 };
+
+UserSignupPage.defaultProps = defaultProps;
 
 export default UserSignupPage;

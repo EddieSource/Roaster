@@ -169,5 +169,20 @@ describe("LoginPage", () => {
 
       expect(alert).not.toBeInTheDocument();
     });
+
+    it("redirects to homePage after successful login", async () => {
+      const actions = {
+        postLogin: jest.fn().mockResolvedValue({}),
+      };
+      const history = {
+        push: jest.fn(),
+      };
+      const { queryByText } = setupForSubmit({ actions, history });
+      fireEvent.click(button);
+
+      await waitForElementToBeRemoved(() => queryByText("Loading..."));
+
+      expect(history.push).toHaveBeenCalledWith("/");
+    });
   });
 });

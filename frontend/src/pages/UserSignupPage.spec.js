@@ -1,5 +1,10 @@
 import React from "react";
-import { render, cleanup, fireEvent, waitFor } from "@testing-library/react";
+import {
+  render,
+  cleanup,
+  fireEvent,
+  waitForElementToBeRemoved,
+} from "@testing-library/react";
 import "@testing-library/jest-dom/extend-expect";
 import UserSignupPage from "./UserSignupPage";
 
@@ -238,5 +243,20 @@ describe("UserSignupPage", () => {
 
     //   expect(errorMessage).not.toBeInTheDocument();
     // });
+
+    it("redirects to homePage after successful signup", async () => {
+      const actions = {
+        postSignup: jest.fn().mockResolvedValue({}),
+      };
+      const history = {
+        push: jest.fn(),
+      };
+      const { queryByText } = setupForSubmit({ actions, history });
+      fireEvent.click(button);
+
+      await waitForElementToBeRemoved(() => queryByText("Loading..."));
+
+      expect(history.push).toHaveBeenCalledWith("/");
+    });
   });
 });
