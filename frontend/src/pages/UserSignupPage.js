@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import Input from "../components/Input";
+import ButtonWithProgress from "../components/ButtonWithProgress";
 
 const UserSignupPage = ({
   actions = {
@@ -107,7 +108,13 @@ const UserSignupPage = ({
         />
       </div>
       <div className="text-center">
-        <button
+        <ButtonWithProgress
+          onClick={onClickSignup}
+          disabled={pendingApiCall || !passwordRepeatConfirmed}
+          pendingApiCall={pendingApiCall}
+          text="Sign Up"
+        />
+        {/* <button
           className="btn btn-primary"
           onClick={() => onClickSignup()}
           disabled={pendingApiCall || !passwordRepeatConfirmed}
@@ -118,7 +125,7 @@ const UserSignupPage = ({
             </div>
           )}
           Sign Up
-        </button>
+        </button> */}
       </div>
     </div>
   );

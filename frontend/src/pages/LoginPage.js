@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import Input from "../components/Input";
+import ButtonWithProgess from "../components/ButtonWithProgress";
 
 const defaultProps = {
   actions: {
@@ -11,6 +12,7 @@ const LoginPage = (props) => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [apiError, setApiError] = useState(undefined);
+  const [pendingApiCall, setPendingApiCall] = useState(false);
 
   const onChangeUsernmae = (e) => {
     setApiError(undefined);
@@ -25,22 +27,19 @@ const LoginPage = (props) => {
       username: username,
       password: password,
     };
-    props.actions.postLogin(body).catch((error) => {
-      if (error.response) {
-        setApiError(error.response.data.message);
-      }
-    });
+    setPendingApiCall(true);
+    props.actions
+      .postLogin(body)
+      .then((responsse) => {
+        setPendingApiCall(false);
+      })
+      .catch((error) => {
+        if (error.response) {
+          setApiError(error.response.data.message);
+          setPendingApiCall(false);
+        }
+      });
   };
-
-  let disableSubmit = false;
-
-  if (username === "") {
-    disableSubmit = true;
-  }
-
-  if (password === "") {
-    disableSubmit = true;
-  }
 
   return (
     <div className="container">
@@ -68,13 +67,13 @@ const LoginPage = (props) => {
         </div>
       )}
       <div className="text-center">
-        <button
+        <ButtonWithProgess
           className="btn btn-primary"
           onClick={onClickLogin}
-          disabled={disableSubmit}
-        >
-          Login
-        </button>
+          disabled={username === "" || password === "" || pendingApiCall}
+          text="login"
+          pendingApiCall={pendingApiCall}
+        />
       </div>
     </div>
   );
