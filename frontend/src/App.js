@@ -6,12 +6,13 @@ import LoginPage from "./pages/LoginPage";
 
 const actions = {
   postSignup: apiCalls.signup,
+  postLogin: apiCalls.login,
 };
 
 function App() {
   return (
     // <UserSignupPage actions = {actions}/>
-    <LoginPage />
+    <LoginPage actions={actions} />
   );
 }
 
