@@ -4,6 +4,8 @@ import LoginPage from "../pages/LoginPage";
 import HomePage from "../pages/HomePage";
 import UserSignupPage from "../pages/UserSignupPage";
 import UserPage from "../pages/UserPage";
+import TopBar from "../components/TopBar";
+
 import { Route, Switch } from "react-router-dom";
 
 const actions = {
@@ -16,6 +18,7 @@ function App() {
   // exact: used when the router search for the exact path matching to be rendered(not from the root path matching)
   return (
     <div>
+      <TopBar />
       <div className="container">
         <Switch>
           <Route exact path="/" component={HomePage} />
