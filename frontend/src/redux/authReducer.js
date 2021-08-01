@@ -7,6 +7,9 @@ const initialState = {
   isLoggedIn: false,
 };
 const authReducer = (state = initialState, action) => {
+  if (action.type === "logout-success") {
+    return { ...initialState };
+  }
   return state;
 };
 

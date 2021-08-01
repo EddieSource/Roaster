@@ -4,6 +4,13 @@ import { Link } from "react-router-dom";
 import { connect } from "react-redux";
 
 const TopBar = (props) => {
+  const onClickLogOut = () => {
+    const action = {
+      type: "logout-success",
+    };
+    props.dispatch(action);
+  };
+
   let links = (
     <ul className="nav navbar-nav ml-auto">
       <li className="nav-item">
@@ -21,7 +28,13 @@ const TopBar = (props) => {
   if (props.user.isLoggedIn) {
     links = (
       <ul className="nav navbar-nav ml-auto">
-        <li className="nav-item nav-link">Logout</li>
+        <li
+          className="nav-item nav-link"
+          onClick={onClickLogOut}
+          style={{ cursor: "pointer" }}
+        >
+          Logout
+        </li>
         <li className="nav-item">
           <Link to={`/${props.user.username}`} className="nav-link">
             My Profile
