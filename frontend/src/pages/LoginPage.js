@@ -1,14 +1,16 @@
 import React, { useState } from "react";
 import Input from "../components/Input";
 import ButtonWithProgess from "../components/ButtonWithProgress";
+import { connect } from "react-redux";
 
 const defaultProps = {
   actions: {
     postLogin: () => new Promise((resolve, reject) => resolve({})),
   },
+  dispatch: () => {},
 };
 
-const LoginPage = (props) => {
+export const LoginPage = (props) => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [apiError, setApiError] = useState(undefined);
@@ -31,6 +33,15 @@ const LoginPage = (props) => {
     props.actions
       .postLogin(body)
       .then((response) => {
+        const action = {
+          type: "login-success",
+          payload: {
+            ...response.data,
+            password: password,
+          },
+        };
+        props.dispatch(action);
+
         setPendingApiCall(false);
         props.history.push("/");
       })
@@ -82,4 +93,4 @@ const LoginPage = (props) => {
 
 LoginPage.defaultProps = defaultProps;
 
-export default LoginPage;
+export default connect()(LoginPage);
