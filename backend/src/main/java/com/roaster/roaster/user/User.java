@@ -30,26 +30,22 @@ public class User implements UserDetails {
 	
 	@Id
 	@GeneratedValue
-	@JsonView(Views.Base.class)
 	private long id; 
 	
 	// set constraint
 	@NotNull(message = "{roaster.constraints.username.NotNull.message}")
 	@Size(min = 4, max=255)
 	@UniqueUsername
-	@JsonView(Views.Base.class)
 	private String username; 
 	
 	@NotNull
 	@Size(min = 4, max=255)
-	@JsonView(Views.Base.class)
 	private String displayName; 
 	
 	@NotNull(message = "{roaster.constraints.password.NotNull.message}")
 	@Size(min = 8, max=255)
 	private String password;
 	
-	@JsonView(Views.Base.class)
 	private String image; 
 
 	@Override

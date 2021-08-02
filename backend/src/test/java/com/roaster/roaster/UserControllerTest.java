@@ -206,6 +206,13 @@ public class UserControllerTest {
 		assertThat(response.getBody().getTotalElements()).isEqualTo(0);
 	}	
 	
+	@Test
+	public void getUsers_whenThereIsAUserInDB_receiveUserWithoutPassword() {
+		userRepository.save(TestUtil.createValidUser());
+		ResponseEntity<TestPage<Map<String, Object>>> response = getUsers(new ParameterizedTypeReference<TestPage<Map<String, Object>>>() {});
+		Map<String, Object> entity = response.getBody().getContent().get(0);
+		assertThat(entity.containsKey("password")).isFalse();
+	}
 	
 	
 	public <T> ResponseEntity<T> postSignup(Object request, Class<T> response){

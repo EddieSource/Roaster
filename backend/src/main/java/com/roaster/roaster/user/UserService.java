@@ -36,7 +36,7 @@ public class UserService {
 	}
 
 
-	public Page<?> getUsers() {
+	public Page<User> getUsers() {
 		// TODO Auto-generated method stub
 		Pageable pageable = PageRequest.of(0, 10); // set each page with 10 items
 		return userRepository.findAll(pageable); 

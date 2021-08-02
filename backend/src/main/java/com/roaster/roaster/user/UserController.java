@@ -21,8 +21,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.fasterxml.jackson.annotation.JsonView;
 import com.roaster.roaster.error.ApiError;
 import com.roaster.roaster.shared.GenericResponse;
+import com.roaster.roaster.user.vm.UserVM;
 
 // handling for HTTP requests
 @RestController
@@ -41,8 +43,8 @@ public class UserController {
 	}
 	
 	@GetMapping("/users")
-	Page<?> getUser() {
-		return userService.getUsers(); 
+	Page<UserVM> getUser() {
+		return userService.getUsers().map(UserVM::new); 
 	}
 	
 	@ExceptionHandler({MethodArgumentNotValidException.class})
