@@ -1,20 +1,10 @@
 import React, { useState } from "react";
 import Input from "../components/Input";
 import ButtonWithProgress from "../components/ButtonWithProgress";
+import { connect } from "react-redux";
+import * as authActions from "../redux/authActions";
 
-const defaultProps = {
-  actions: {
-    postSignup: () =>
-      new Promise((resolve, reject) => {
-        resolve({});
-      }),
-  },
-  history: {
-    push: () => {},
-  },
-};
-
-const UserSignupPage = (props) => {
+export const UserSignupPage = (props) => {
   const [displayName, setDisplayName] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -125,6 +115,23 @@ const UserSignupPage = (props) => {
   );
 };
 
-UserSignupPage.defaultProps = defaultProps;
+UserSignupPage.defaultProps = {
+  actions: {
+    postSignup: () =>
+      new Promise((resolve, reject) => {
+        resolve({});
+      }),
+  },
+  history: {
+    push: () => {},
+  },
+};
 
-export default UserSignupPage;
+const mapDispatchToProps = (dispatch) => {
+  return {
+    actions: {
+      postSignup: (user) => dispatch(authActions.signupHandler(user)),
+    },
+  };
+};
+export default connect(null, mapDispatchToProps)(UserSignupPage);

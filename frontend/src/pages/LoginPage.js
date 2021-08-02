@@ -1,14 +1,10 @@
 import React, { useState } from "react";
 import Input from "../components/Input";
 import ButtonWithProgess from "../components/ButtonWithProgress";
+import { connect } from "react-redux";
+import * as authActions from "../redux/authActions";
 
-const defaultProps = {
-  actions: {
-    postLogin: () => new Promise((resolve, reject) => resolve({})),
-  },
-};
-
-const LoginPage = (props) => {
+export const LoginPage = (props) => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [apiError, setApiError] = useState(undefined);
@@ -80,6 +76,19 @@ const LoginPage = (props) => {
   );
 };
 
-LoginPage.defaultProps = defaultProps;
+LoginPage.defaultProps = {
+  actions: {
+    postLogin: () => new Promise((resolve, reject) => resolve({})),
+  },
+  dispatch: () => {},
+};
 
-export default LoginPage;
+const mapDispatchToProps = (dispatch) => {
+  return {
+    actions: {
+      postLogin: (body) => dispatch(authActions.loginHandler(body)),
+    },
+  };
+};
+
+export default connect(null, mapDispatchToProps)(LoginPage);
