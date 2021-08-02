@@ -6,7 +6,7 @@ import {
   waitForElementToBeRemoved,
 } from "@testing-library/react";
 import "@testing-library/jest-dom/extend-expect";
-import UserSignupPage from "./UserSignupPage";
+import { UserSignupPage } from "./UserSignupPage";
 
 describe("UserSignupPage", () => {
   describe("Layout", () => {

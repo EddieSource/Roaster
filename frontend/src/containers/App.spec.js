@@ -4,11 +4,11 @@ import { MemoryRouter } from "react-router-dom";
 import App from "./App";
 import authReducer from "../redux/authReducer";
 import { Provider } from "react-redux";
-import { createStore } from "redux";
 import axios from "axios";
+import configureStore from "../redux/configureStore";
 
 const setup = (path) => {
-  const store = createStore(authReducer);
+  const store = configureStore(false);
   return render(
     <Provider store={store}>
       <MemoryRouter initialEntries={[path]}>
@@ -105,6 +105,41 @@ describe("App", () => {
         image: "profile1.png",
       },
     });
+    fireEvent.click(button);
+
+    const myProfileLink = await findByText("My Profile");
+    expect(myProfileLink).toBeInTheDocument();
+  });
+
+  it("displays My Profile on TopBar after signup success", async () => {
+    const { queryByPlaceholderText, container, findByText } = setup("/signup");
+    const displayNameInput = queryByPlaceholderText("Your display name");
+    const usernameInput = queryByPlaceholderText("Your username");
+    const passwordInput = queryByPlaceholderText("Your password");
+    const passwordRepeat = queryByPlaceholderText("Repeat your password");
+
+    fireEvent.change(displayNameInput, changeEvent("display1"));
+    fireEvent.change(usernameInput, changeEvent("user1"));
+    fireEvent.change(passwordInput, changeEvent("P4ssword"));
+    fireEvent.change(passwordRepeat, changeEvent("P4ssword"));
+
+    const button = container.querySelector("button");
+    axios.post = jest
+      .fn()
+      .mockResolvedValueOnce({
+        data: {
+          message: "User saved",
+        },
+      })
+      .mockResolvedValueOnce({
+        data: {
+          id: 1,
+          username: "user1",
+          displayName: "display1",
+          image: "profile1.png",
+        },
+      });
+
     fireEvent.click(button);
 
     const myProfileLink = await findByText("My Profile");
