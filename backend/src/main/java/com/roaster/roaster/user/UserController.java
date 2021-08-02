@@ -26,6 +26,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.fasterxml.jackson.annotation.JsonView;
 import com.roaster.roaster.error.ApiError;
+import com.roaster.roaster.shared.CurrentUser;
 import com.roaster.roaster.shared.GenericResponse;
 import com.roaster.roaster.user.vm.UserVM;
 
@@ -46,8 +47,8 @@ public class UserController {
 	}
 	
 	@GetMapping("/users")
-	Page<UserVM> getUser(Pageable page) {
-		return userService.getUsers(page).map(UserVM::new); 
+	Page<UserVM> getUser(@CurrentUser User loggedInUser, Pageable page) {
+		return userService.getUsers(loggedInUser, page).map(UserVM::new); 
 	}
 	
 	@ExceptionHandler({MethodArgumentNotValidException.class})

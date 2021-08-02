@@ -36,8 +36,11 @@ public class UserService {
 	}
 
 
-	public Page<User> getUsers(Pageable pageable) {
+	public Page<User> getUsers(User loggedInUser, Pageable pageable) {
 		// TODO Auto-generated method stub
+		if(loggedInUser != null) {
+			return userRepository.findByUsernameNot(loggedInUser.getUsername(), pageable); 
+		}
 		return userRepository.findAll(pageable); 
 	}
 	
