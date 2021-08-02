@@ -7,6 +7,11 @@ import { Provider } from "react-redux";
 import axios from "axios";
 import configureStore from "../redux/configureStore";
 
+beforeEach(() => {
+  localStorage.clear();
+  delete axios.defaults.headers.common["Authorization"];
+});
+
 const setup = (path) => {
   const store = configureStore(false);
   return render(
@@ -24,6 +29,20 @@ const changeEvent = (content) => {
       value: content,
     },
   };
+};
+
+const setUserOneLoggedInStorage = () => {
+  localStorage.setItem(
+    "roaster-auth",
+    JSON.stringify({
+      id: 1,
+      username: "user1",
+      displayName: "display1",
+      image: "profile1.png",
+      password: "P4ssword",
+      isLoggedIn: true,
+    })
+  );
 };
 
 describe("App", () => {
@@ -111,38 +130,117 @@ describe("App", () => {
     expect(myProfileLink).toBeInTheDocument();
   });
 
-  it("displays My Profile on TopBar after signup success", async () => {
-    const { queryByPlaceholderText, container, findByText } = setup("/signup");
-    const displayNameInput = queryByPlaceholderText("Your display name");
+  // it("displays My Profile on TopBar after signup success", async () => {
+  //   const { queryByPlaceholderText, container, findByText } = setup("/signup");
+  //   const displayNameInput = queryByPlaceholderText("Your display name");
+  //   const usernameInput = queryByPlaceholderText("Your username");
+  //   const passwordInput = queryByPlaceholderText("Your password");
+  //   const passwordRepeat = queryByPlaceholderText("Repeat your password");
+
+  //   fireEvent.change(displayNameInput, changeEvent("display1"));
+  //   fireEvent.change(usernameInput, changeEvent("user1"));
+  //   fireEvent.change(passwordInput, changeEvent("P4ssword"));
+  //   fireEvent.change(passwordRepeat, changeEvent("P4ssword"));
+
+  //   const button = container.querySelector("button");
+  //   axios.post = jest
+  //     .fn()
+  //     .mockResolvedValueOnce({
+  //       data: {
+  //         message: "User saved",
+  //       },
+  //     })
+  //     .mockResolvedValueOnce({
+  //       data: {
+  //         id: 1,
+  //         username: "user1",
+  //         displayName: "display1",
+  //         image: "profile1.png",
+  //       },
+  //     });
+
+  //   fireEvent.click(button);
+
+  //   const myProfileLink = await findByText("My Profile");
+  //   expect(myProfileLink).toBeInTheDocument();
+  // });
+
+  it("saves logged in user data to localStorage after login success", async () => {
+    const { queryByPlaceholderText, container, findByText } = setup("/login");
     const usernameInput = queryByPlaceholderText("Your username");
-    const passwordInput = queryByPlaceholderText("Your password");
-    const passwordRepeat = queryByPlaceholderText("Repeat your password");
-
-    fireEvent.change(displayNameInput, changeEvent("display1"));
     fireEvent.change(usernameInput, changeEvent("user1"));
+    const passwordInput = queryByPlaceholderText("Your password");
     fireEvent.change(passwordInput, changeEvent("P4ssword"));
-    fireEvent.change(passwordRepeat, changeEvent("P4ssword"));
-
     const button = container.querySelector("button");
-    axios.post = jest
-      .fn()
-      .mockResolvedValueOnce({
-        data: {
-          message: "User saved",
-        },
-      })
-      .mockResolvedValueOnce({
-        data: {
-          id: 1,
-          username: "user1",
-          displayName: "display1",
-          image: "profile1.png",
-        },
-      });
-
+    axios.post = jest.fn().mockResolvedValue({
+      data: {
+        id: 1,
+        username: "user1",
+        displayName: "display1",
+        image: "profile1.png",
+      },
+    });
     fireEvent.click(button);
 
-    const myProfileLink = await findByText("My Profile");
+    await findByText("My Profile");
+    const dataInStorage = JSON.parse(localStorage.getItem("roaster-auth"));
+    expect(dataInStorage).toEqual({
+      id: 1,
+      username: "user1",
+      displayName: "display1",
+      image: "profile1.png",
+      password: "P4ssword",
+      isLoggedIn: true,
+    });
+  });
+
+  it("displays logged in topBar when storage has logged in user data", () => {
+    setUserOneLoggedInStorage();
+    const { queryByText } = setup("/");
+    const myProfileLink = queryByText("My Profile");
     expect(myProfileLink).toBeInTheDocument();
+  });
+
+  it("sets axios authorization with base64 encoded user credentials after login success", async () => {
+    const { queryByPlaceholderText, container, findByText } = setup("/login");
+    const usernameInput = queryByPlaceholderText("Your username");
+    fireEvent.change(usernameInput, changeEvent("user1"));
+    const passwordInput = queryByPlaceholderText("Your password");
+    fireEvent.change(passwordInput, changeEvent("P4ssword"));
+    const button = container.querySelector("button");
+    axios.post = jest.fn().mockResolvedValue({
+      data: {
+        id: 1,
+        username: "user1",
+        displayName: "display1",
+        image: "profile1.png",
+      },
+    });
+    fireEvent.click(button);
+
+    await findByText("My Profile");
+    const axiosAuthorization = axios.defaults.headers.common["Authorization"];
+
+    const encoded = btoa("user1:P4ssword");
+    const expectedAuthorization = `Basic ${encoded}`;
+    expect(axiosAuthorization).toBe(expectedAuthorization);
+  });
+
+  it("sets axios authorization with base64 encoded user credentials when storage has logged in user data", () => {
+    setUserOneLoggedInStorage();
+    setup("/");
+    const axiosAuthorization = axios.defaults.headers.common["Authorization"];
+    const encoded = btoa("user1:P4ssword");
+    const expectedAuthorization = `Basic ${encoded}`;
+    expect(axiosAuthorization).toBe(expectedAuthorization);
+  });
+
+  it("removes axios authorization header when user logout", async () => {
+    setUserOneLoggedInStorage();
+    const { queryByText } = setup("/");
+    fireEvent.click(queryByText("Logout"));
+
+    const axiosAuthorization = axios.defaults.headers.common["Authorization"];
+    expect(axiosAuthorization).toBeFalsy();
   });
 });
