@@ -12,6 +12,14 @@ const mockSuccessGetUser = {
   },
 };
 
+const mockFailGetUser = {
+  response: {
+    data: {
+      message: "User not found",
+    },
+  },
+};
+
 const match = {
   params: {
     username: "user1",
@@ -34,6 +42,12 @@ describe("UserPage", () => {
       const { findByText } = setup({ match });
       const text = await findByText("display1@user1");
       expect(text).toBeInTheDocument();
+    });
+    it("displays not found alert when user not found", async () => {
+      apiCalls.getUser = jest.fn().mockRejectedValue(mockFailGetUser);
+      const { findByText } = setup({ match });
+      const alert = await findByText("User not found");
+      expect(alert).toBeInTheDocument();
     });
   });
   describe("Lifecycle", () => {
