@@ -24,3 +24,7 @@ export const listUsers = (param = { page: 0, size: 3 }) => {
   }&size=${param.size || 3}`;
   return axios.get(path);
 };
+
+export const getUser = (username) => {
+  return axios.get(`http://localhost:8080/api/1.0/users/${username}`);
+};
