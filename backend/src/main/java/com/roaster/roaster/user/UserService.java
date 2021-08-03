@@ -8,6 +8,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.roaster.roaster.error.NotFoundException;
+import com.roaster.roaster.user.vm.UserUpdateVM;
 
 @Service	
 public class UserService {
@@ -54,6 +55,14 @@ public class UserService {
 			throw new NotFoundException(username + " not found"); 
 		}
 		return inDB; 
+	}
+
+
+	public User update(long id, UserUpdateVM userUpdate) {
+		// TODO Auto-generated method stub
+		User inDB = userRepository.getOne(id); 
+		inDB.setDisplayName(userUpdate.getDisplayName());
+		return userRepository.save(inDB); 
 	}
 	
 }
