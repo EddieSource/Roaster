@@ -9,6 +9,7 @@ const UserPage = (props) => {
 
   useEffect(() => {
     const loadUser = () => {
+      setUserNotFound(false);
       const username = props.match.params.username;
       if (!username) {
         return;
