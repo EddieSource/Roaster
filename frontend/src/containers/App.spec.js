@@ -6,6 +6,15 @@ import authReducer from "../redux/authReducer";
 import { Provider } from "react-redux";
 import axios from "axios";
 import configureStore from "../redux/configureStore";
+import * as apiCalls from "../api/apiCalls";
+
+apiCalls.listUsers = jest.fn().mockResolvedValue({
+  data: {
+    content: [],
+    number: 0,
+    size: 3,
+  },
+});
 
 beforeEach(() => {
   localStorage.clear();
