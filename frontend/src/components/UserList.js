@@ -56,7 +56,7 @@ const UserList = (props) => {
         {!last && (
           <span
             className="badge badge-light float-right"
-            style={{ cursor: "point" }}
+            style={{ cursor: "pointer" }}
             onClick={onClickNext}
           >
             {`next >`}
