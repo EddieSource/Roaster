@@ -20,20 +20,20 @@ const UserList = (props) => {
       .listUsers({ page: requestedPage, size: 3 })
       .then((response) => {
         setPage(response.data);
-        //   setLoadError();
+        setLoadError();
       })
       .catch((error) => {
-        //   setLoadError('User load failed');
+        setLoadError("User load failed");
       });
   };
 
-  // const onClickNext = () => {
-  //   loadData(page.number + 1);
-  // };
+  const onClickNext = () => {
+    loadData(page.number + 1);
+  };
 
-  // const onClickPrevious = () => {
-  //   loadData(page.number - 1);
-  // };
+  const onClickPrevious = () => {
+    loadData(page.number - 1);
+  };
 
   const { content, first, last } = page;
 
@@ -45,27 +45,27 @@ const UserList = (props) => {
           return <UserListItem key={user.username} user={user} />;
         })}
       </div>
-      {/* <div className="clearfix">
-          {!first && (
-            <span
-              className="badge badge-light float-left"
-              style={{ cursor: 'pointer' }}
-              onClick={onClickPrevious}
-            >{`< previous`}</span>
-          )}
-          {!last && (
-            <span
-              className="badge badge-light float-right"
-              style={{ cursor: 'pointer' }}
-              onClick={onClickNext}
-            >
-              next >
-            </span>
-          )}
-        </div> */}
-      {/* {loadError && (
-          <span className="text-center text-danger">{loadError}</span>
-        )} */}
+      {!first && (
+        <span
+          className="badge badge-light float-left"
+          style={{ cursor: "pointer" }}
+          onClick={onClickPrevious}
+        >{`< previous`}</span>
+      )}
+      <div>
+        {!last && (
+          <span
+            className="badge badge-light float-right"
+            style={{ cursor: "point" }}
+            onClick={onClickNext}
+          >
+            {`next >`}
+          </span>
+        )}
+      </div>
+      {loadError && (
+        <span className="text-center text-danger">{loadError}</span>
+      )}
     </div>
   );
 };
