@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import * as apiCalls from "../api/apiCalls";
+import ProfileCard from "../components/ProfileCard";
 
 const UserPage = (props) => {
   const [user, setUser] = useState(undefined);
@@ -34,9 +35,7 @@ const UserPage = (props) => {
     );
   }
   return (
-    <div data-testid="userpage">
-      {user && <span>{`${user.displayName}@${user.username}`}</span>}
-    </div>
+    <div data-testid="userpage">{user && <ProfileCard user={user} />}</div>
   );
 };
 
