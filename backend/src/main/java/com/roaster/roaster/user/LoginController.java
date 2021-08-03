@@ -13,15 +13,15 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.fasterxml.jackson.annotation.JsonView;
 import com.roaster.roaster.shared.CurrentUser;
+import com.roaster.roaster.user.vm.UserVM;
 
 @RestController
 @CrossOrigin(origins = "http://localhost:3000")
 public class LoginController {
 	
 	@PostMapping("/api/1.0/login")
-	@JsonView(Views.Base.class)
-	User handleLogin(@CurrentUser User loggedInUser) {
-		return loggedInUser; 
+	UserVM handleLogin(@CurrentUser User loggedInUser) {
+		return new UserVM(loggedInUser); 
 	}
 	
 	// request is not at the stage of being passed to controller so use internal error forwarding mechanisms

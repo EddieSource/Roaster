@@ -7,33 +7,48 @@ import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.fasterxml.jackson.annotation.JsonView;
 import com.roaster.roaster.error.ApiError;
+import com.roaster.roaster.shared.CurrentUser;
 import com.roaster.roaster.shared.GenericResponse;
+import com.roaster.roaster.user.vm.UserVM;
 
 // handling for HTTP requests
 @RestController
+@RequestMapping("/api/1.0")
 @CrossOrigin(origins = "http://localhost:3000")
 public class UserController {
 	
 	@Autowired
 	UserService userService; 
 	
-	@PostMapping("/api/1.0/users")
+	@PostMapping("/users")
 	GenericResponse createUser(@Valid @RequestBody User user) {
 		userService.save(user); 
 		return new GenericResponse("User saved"); 
 		// finally convert to json by the library, require no args constructor 
+	}
+	
+	@GetMapping("/users")
+	Page<UserVM> getUser(@CurrentUser User loggedInUser, Pageable page) {
+		return userService.getUsers(loggedInUser, page).map(UserVM::new); 
 	}
 	
 	@ExceptionHandler({MethodArgumentNotValidException.class})
