@@ -28,6 +28,11 @@ import lombok.Data;
 // one user can have multiple roles in terms of 
 public class User implements UserDetails {
 	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -609347966617943881L;
+
 	@Id
 	@GeneratedValue
 	private long id; 

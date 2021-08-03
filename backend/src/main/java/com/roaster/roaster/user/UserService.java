@@ -7,6 +7,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.roaster.roaster.error.NotFoundException;
+
 @Service	
 public class UserService {
 	
@@ -42,6 +44,16 @@ public class UserService {
 			return userRepository.findByUsernameNot(loggedInUser.getUsername(), pageable); 
 		}
 		return userRepository.findAll(pageable); 
+	}
+
+
+	public User getByUsername(String username) {
+		// TODO Auto-generated method stub
+		User inDB = userRepository.findByUsername(username); 
+		if(inDB == null){
+			throw new NotFoundException(username + " not found"); 
+		}
+		return inDB; 
 	}
 	
 }
