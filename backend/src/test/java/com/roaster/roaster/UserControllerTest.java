@@ -2,6 +2,7 @@ package com.roaster.roaster;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Base64;
 import java.util.List;
@@ -10,6 +11,7 @@ import java.util.stream.IntStream;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.FixMethodOrder;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.runners.MethodSorters;
@@ -27,6 +29,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.support.BasicAuthenticationInterceptor;
 import org.springframework.test.context.ActiveProfiles;
 
+import com.roaster.roaster.configuration.AppConfiguration;
 import com.roaster.roaster.error.ApiError;
 import com.roaster.roaster.shared.GenericResponse;
 import com.roaster.roaster.user.User;
@@ -53,6 +56,9 @@ public class UserControllerTest {
 	
 	@Autowired
 	UserService userService;
+	
+	@Autowired
+	AppConfiguration appConfiguration; 
 	
 	@BeforeEach
 	public void cleanup() {
@@ -378,6 +384,25 @@ public class UserControllerTest {
 		assertThat(response.getBody().getImage()).isNotEqualTo("profile-image.png");
 	}
 	
+	@Test
+	public void putUser_withValidRequestBodyWithSupportedImageFromAuthorizedUser_imageIsStoredUnderProfileFolder() throws IOException {
+		User user = userService.save(TestUtil.createValidUser("user1"));
+		authenticate(user.getUsername());
+		UserUpdateVM updatedUser = createValidUserUpdateVM();
+		String imageString = readFileToBase64("profile.png");
+		updatedUser.setImage(imageString);
+		
+		HttpEntity<UserUpdateVM> requestEntity = new HttpEntity<>(updatedUser);
+		ResponseEntity<UserVM> response = putUser(user.getId(), requestEntity, UserVM.class);
+		
+		String storedImageName = response.getBody().getImage();
+		
+		String profilePicturePath = appConfiguration.getFullProfileImagesPath() + "/" + storedImageName;
+		
+		File storedImage = new File(profilePicturePath);
+		assertThat(storedImage.exists()).isTrue();
+	}
+	
 	private String readFileToBase64(String fileName) throws IOException {
 		ClassPathResource imageResource = new ClassPathResource(fileName);		
 		byte[] imageArr = FileUtils.readFileToByteArray(imageResource.getFile());
@@ -417,5 +442,12 @@ public class UserControllerTest {
 	public <T> ResponseEntity<T> putUser(long id, HttpEntity<?> requestEntity, Class<T> responseType){
 		String path = API_1_0_USERS + "/" + id;
 		return testRestTemplate.exchange(path, HttpMethod.PUT, requestEntity, responseType);
+	}
+	
+	
+	@AfterEach
+	public void cleanDirectory() throws IOException {
+		FileUtils.cleanDirectory(new File(appConfiguration.getFullProfileImagesPath()));
+		FileUtils.cleanDirectory(new File(appConfiguration.getFullAttachmentsPath()));
 	}
 }
