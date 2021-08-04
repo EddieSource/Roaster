@@ -51,7 +51,6 @@ const UserPage = (props) => {
 
   const onClickSave = () => {
     const userId = props.loggedInUser.id;
-    console.log("requestImage:", image);
     const userUpdate = {
       displayName: user.displayName,
       image: image && image.split(",")[1],
@@ -60,7 +59,6 @@ const UserPage = (props) => {
     apiCalls
       .updateUser(userId, userUpdate)
       .then((response) => {
-        console.log("respondImage:", response.data.image);
         const updatedUser = { ...user };
         updatedUser.image = response.data.image;
 
