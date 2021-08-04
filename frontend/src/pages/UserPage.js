@@ -8,6 +8,8 @@ const UserPage = (props) => {
   const [userNotFound, setUserNotFound] = useState(false);
   const [isLoadingUser, setIsLoadingUser] = useState(false);
   const [inEditMode, setInEditMode] = useState(false);
+  const [originalDisplayName, setOriginalDisplayName] = useState(undefined);
+  const [pendingUpdateCall, setPendingUpdateCall] = useState(false);
 
   console.log(user);
 
@@ -38,7 +40,11 @@ const UserPage = (props) => {
   };
 
   const onClickCancel = () => {
+    if (originalDisplayName !== undefined) {
+      setUser({ ...user, displayName: originalDisplayName });
+    }
     setInEditMode(false);
+    setOriginalDisplayName(undefined);
   };
 
   const onClickSave = () => {
@@ -46,12 +52,23 @@ const UserPage = (props) => {
     const userUpdate = {
       displayName: user.displayName,
     };
-    apiCalls.updateUser(userId, userUpdate).then((respond) => {
-      setInEditMode(false);
-    });
+    setPendingUpdateCall(true);
+    apiCalls
+      .updateUser(userId, userUpdate)
+      .then((respond) => {
+        setInEditMode(false);
+        setOriginalDisplayName(undefined);
+        setPendingUpdateCall(false);
+      })
+      .catch((error) => {
+        setPendingUpdateCall(false);
+      });
   };
 
   const onChangeDisplayName = (event) => {
+    if (originalDisplayName === undefined) {
+      setOriginalDisplayName(user.displayName);
+    }
     setUser({ ...user, displayName: event.target.value });
   };
 
@@ -83,6 +100,7 @@ const UserPage = (props) => {
         onClickCancel={onClickCancel}
         onClickSave={onClickSave}
         onChangeDisplayName={onChangeDisplayName}
+        pendingUpdateCall={pendingUpdateCall}
       />
     );
   }
