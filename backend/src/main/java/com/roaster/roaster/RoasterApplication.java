@@ -21,7 +21,7 @@ public class RoasterApplication {
 	}
 	
 	@Bean
-	@Profile("!test")
+	@Profile("dev")
 	CommandLineRunner run(UserService userService) {
 		return (args) -> {
 			IntStream.rangeClosed(1, 15)

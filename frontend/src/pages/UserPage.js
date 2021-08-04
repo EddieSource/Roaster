@@ -4,14 +4,13 @@ import ProfileCard from "../components/ProfileCard";
 import { connect } from "react-redux";
 
 const UserPage = (props) => {
-  const [user, setUser] = useState(undefined);
+  const [user, setUser] = useState();
   const [userNotFound, setUserNotFound] = useState(false);
   const [isLoadingUser, setIsLoadingUser] = useState(false);
   const [inEditMode, setInEditMode] = useState(false);
-  const [originalDisplayName, setOriginalDisplayName] = useState(undefined);
+  const [originalDisplayName, setOriginalDisplayName] = useState();
   const [pendingUpdateCall, setPendingUpdateCall] = useState(false);
-
-  console.log(user);
+  const [image, setImage] = useState();
 
   useEffect(() => {
     const loadUser = () => {
@@ -24,7 +23,7 @@ const UserPage = (props) => {
       apiCalls
         .getUser(username)
         .then((response) => {
-          setUser({ ...response.data });
+          setUser(response.data);
           setIsLoadingUser(false);
         })
         .catch((error) => {
@@ -40,24 +39,35 @@ const UserPage = (props) => {
   };
 
   const onClickCancel = () => {
+    const updatedUser = { ...user };
     if (originalDisplayName !== undefined) {
-      setUser({ ...user, displayName: originalDisplayName });
+      updatedUser.displayName = originalDisplayName;
     }
+    setUser(updatedUser);
+    setOriginalDisplayName();
     setInEditMode(false);
-    setOriginalDisplayName(undefined);
+    setImage();
   };
 
   const onClickSave = () => {
     const userId = props.loggedInUser.id;
+    console.log("requestImage:", image);
     const userUpdate = {
       displayName: user.displayName,
+      image: image && image.split(",")[1],
     };
     setPendingUpdateCall(true);
     apiCalls
       .updateUser(userId, userUpdate)
-      .then((respond) => {
+      .then((response) => {
+        console.log("respondImage:", response.data.image);
+        const updatedUser = { ...user };
+        updatedUser.image = response.data.image;
+
+        setUser(updatedUser);
         setInEditMode(false);
-        setOriginalDisplayName(undefined);
+        setOriginalDisplayName();
+        setImage();
         setPendingUpdateCall(false);
       })
       .catch((error) => {
@@ -66,10 +76,24 @@ const UserPage = (props) => {
   };
 
   const onChangeDisplayName = (event) => {
+    const updatedUser = { ...user };
     if (originalDisplayName === undefined) {
       setOriginalDisplayName(user.displayName);
     }
-    setUser({ ...user, displayName: event.target.value });
+    updatedUser.displayName = event.target.value;
+    setUser(updatedUser);
+  };
+
+  const onFileSelect = (event) => {
+    if (event.target.files.length === 0) {
+      return;
+    }
+    const file = event.target.files[0];
+    let reader = new FileReader();
+    reader.onloadend = () => {
+      setImage(reader.result);
+    };
+    reader.readAsDataURL(file);
   };
 
   let pageContent;
@@ -101,6 +125,8 @@ const UserPage = (props) => {
         onClickSave={onClickSave}
         onChangeDisplayName={onChangeDisplayName}
         pendingUpdateCall={pendingUpdateCall}
+        loadedImage={image}
+        onFileSelect={onFileSelect}
       />
     );
   }

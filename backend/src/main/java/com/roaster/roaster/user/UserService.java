@@ -1,5 +1,8 @@
 package com.roaster.roaster.user;
 
+import java.io.IOException;
+import java.util.UUID;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -8,6 +11,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.roaster.roaster.error.NotFoundException;
+import com.roaster.roaster.file.FileService;
 import com.roaster.roaster.user.vm.UserUpdateVM;
 
 @Service	
@@ -16,11 +20,13 @@ public class UserService {
 	
 	UserRepository userRepository;
 	PasswordEncoder passwordEncoder; 
+	FileService fileService; 
 	
-	public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+	public UserService(UserRepository userRepository, PasswordEncoder passwordEncode, FileService fileService) {
 		super();
 		this.userRepository = userRepository;
 		this.passwordEncoder = new BCryptPasswordEncoder(); 
+		this.fileService = fileService; 
 	} 
 	
 	
@@ -62,6 +68,15 @@ public class UserService {
 		// TODO Auto-generated method stub
 		User inDB = userRepository.getOne(id); 
 		inDB.setDisplayName(userUpdate.getDisplayName());
+		if(userUpdate.getImage() != null) {
+			String savedImageName; 
+			try {
+				savedImageName = fileService.saveProfileImage(userUpdate.getImage()); 
+				inDB.setImage(savedImageName);
+			} catch (IOException e) {
+				e.printStackTrace(); 
+			}
+		}
 		return userRepository.save(inDB); 
 	}
 	
