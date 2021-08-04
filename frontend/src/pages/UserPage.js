@@ -41,6 +41,20 @@ const UserPage = (props) => {
     setInEditMode(false);
   };
 
+  const onClickSave = () => {
+    const userId = props.loggedInUser.id;
+    const userUpdate = {
+      displayName: user.displayName,
+    };
+    apiCalls.updateUser(userId, userUpdate).then((respond) => {
+      setInEditMode(false);
+    });
+  };
+
+  const onChangeDisplayName = (event) => {
+    setUser({ ...user, displayName: event.target.value });
+  };
+
   let pageContent;
 
   if (isLoadingUser) {
@@ -67,6 +81,8 @@ const UserPage = (props) => {
         inEditMode={inEditMode}
         onClickEdit={onClickEdit}
         onClickCancel={onClickCancel}
+        onClickSave={onClickSave}
+        onChangeDisplayName={onChangeDisplayName}
       />
     );
   }
