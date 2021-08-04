@@ -2,6 +2,9 @@ import React from "react";
 import { render } from "@testing-library/react";
 import UserPage from "./UserPage";
 import * as apiCalls from "../api/apiCalls";
+import { Provider } from "react-redux";
+import configureStore from "../redux/configureStore";
+import axios from "axios";
 
 const mockSuccessGetUser = {
   data: {
@@ -26,9 +29,34 @@ const match = {
   },
 };
 
-const setup = (props) => {
-  return render(<UserPage {...props} />);
+const setUserOneLoggedInStorage = () => {
+  localStorage.setItem(
+    "roaster-auth",
+    JSON.stringify({
+      id: 1,
+      username: "user1",
+      displayName: "display1",
+      image: "profile1.png",
+      password: "P4ssword",
+      isLoggedIn: true,
+    })
+  );
 };
+
+const setup = (props) => {
+  const store = configureStore(false);
+  return render(
+    <Provider store={store}>
+      {" "}
+      <UserPage {...props} />{" "}
+    </Provider>
+  );
+};
+
+beforeEach(() => {
+  localStorage.clear();
+  delete axios.defaults.headers.common["Authorization"];
+});
 
 describe("UserPage", () => {
   describe("Layout", () => {
@@ -61,6 +89,14 @@ describe("UserPage", () => {
       const { queryAllByText } = setup({ match });
       const spinners = queryAllByText("Loading...");
       expect(spinners.length).not.toBe(0);
+    });
+    it("displays the edit button when loggedInUser matches to user in url", async () => {
+      setUserOneLoggedInStorage();
+      apiCalls.getUser = jest.fn().mockResolvedValue(mockSuccessGetUser);
+      const { queryByText, findByText } = setup({ match });
+      await findByText("display1@user1");
+      const editButton = queryByText("Edit");
+      expect(editButton).toBeInTheDocument();
     });
   });
   describe("Lifecycle", () => {

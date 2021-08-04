@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import * as apiCalls from "../api/apiCalls";
 import ProfileCard from "../components/ProfileCard";
+import { connect } from "react-redux";
 
 const UserPage = (props) => {
   const [user, setUser] = useState(undefined);
@@ -48,7 +49,9 @@ const UserPage = (props) => {
       </div>
     );
   } else {
-    pageContent = user && <ProfileCard user={user} />;
+    const isEditable =
+      props.loggedInUser.username === props.match.params.username;
+    pageContent = user && <ProfileCard user={user} isEditable={isEditable} />;
   }
   return <div data-testid="userpage">{pageContent}</div>;
 };
@@ -59,4 +62,9 @@ UserPage.defaultProps = {
   },
 };
 
-export default UserPage;
+const mapStateToProps = (state) => {
+  return {
+    loggedInUser: state,
+  };
+};
+export default connect(mapStateToProps)(UserPage);
