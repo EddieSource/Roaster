@@ -1,5 +1,7 @@
 package com.roaster.roaster.user;
 
+import java.util.UUID;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -62,6 +64,8 @@ public class UserService {
 		// TODO Auto-generated method stub
 		User inDB = userRepository.getOne(id); 
 		inDB.setDisplayName(userUpdate.getDisplayName());
+		String savedImageName = inDB.getUsername() + UUID.randomUUID().toString().replaceAll("-", ""); 
+		inDB.setImage(savedImageName); 
 		return userRepository.save(inDB); 
 	}
 	
