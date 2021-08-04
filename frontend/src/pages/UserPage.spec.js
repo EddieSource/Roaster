@@ -1,5 +1,5 @@
 import React from "react";
-import { render } from "@testing-library/react";
+import { render, fireEvent } from "@testing-library/react";
 import UserPage from "./UserPage";
 import * as apiCalls from "../api/apiCalls";
 import { Provider } from "react-redux";
@@ -20,6 +20,15 @@ const mockFailGetUser = {
     data: {
       message: "User not found",
     },
+  },
+};
+
+const mockSuccessUpdateUser = {
+  data: {
+    id: 1,
+    username: "user1",
+    displayName: "display1-update",
+    image: "profile1-update.png",
   },
 };
 
@@ -109,6 +118,38 @@ describe("UserPage", () => {
       apiCalls.getUser = jest.fn().mockResolvedValue(mockSuccessGetUser);
       setup({ match });
       expect(apiCalls.getUser).toHaveBeenCalledWith("user1");
+    });
+  });
+
+  describe("ProfileCard Interactions", () => {
+    const setupForEdit = async () => {
+      setUserOneLoggedInStorage();
+      apiCalls.getUser = jest.fn().mockResolvedValue(mockSuccessGetUser);
+      const rendered = setup({ match });
+      const editButton = await rendered.findByText("Edit");
+      fireEvent.click(editButton);
+      return rendered;
+    };
+    const mockDelayedUpdateSuccess = () => {
+      return jest.fn().mockImplementation(() => {
+        return new Promise((resolve, reject) => {
+          setTimeout(() => {
+            resolve(mockSuccessUpdateUser);
+          }, 300);
+        });
+      });
+    };
+    it("displays edit layout when clicking edit button", async () => {
+      const { queryByText } = await setupForEdit();
+      expect(queryByText("Save")).toBeInTheDocument();
+    });
+    it("returns back to none edit mode after clicking cancel", async () => {
+      const { queryByText } = await setupForEdit();
+
+      const cancelButton = queryByText("Cancel");
+      fireEvent.click(cancelButton);
+
+      expect(queryByText("Edit")).toBeInTheDocument();
     });
   });
 });

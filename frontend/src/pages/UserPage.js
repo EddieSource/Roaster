@@ -7,6 +7,7 @@ const UserPage = (props) => {
   const [user, setUser] = useState(undefined);
   const [userNotFound, setUserNotFound] = useState(false);
   const [isLoadingUser, setIsLoadingUser] = useState(false);
+  const [inEditMode, setInEditMode] = useState(false);
 
   console.log(user);
 
@@ -32,6 +33,14 @@ const UserPage = (props) => {
     loadUser();
   }, [props.match.params.username]);
 
+  const onClickEdit = () => {
+    setInEditMode(true);
+  };
+
+  const onClickCancel = () => {
+    setInEditMode(false);
+  };
+
   let pageContent;
 
   if (isLoadingUser) {
@@ -51,7 +60,15 @@ const UserPage = (props) => {
   } else {
     const isEditable =
       props.loggedInUser.username === props.match.params.username;
-    pageContent = user && <ProfileCard user={user} isEditable={isEditable} />;
+    pageContent = user && (
+      <ProfileCard
+        user={user}
+        isEditable={isEditable}
+        inEditMode={inEditMode}
+        onClickEdit={onClickEdit}
+        onClickCancel={onClickCancel}
+      />
+    );
   }
   return <div data-testid="userpage">{pageContent}</div>;
 };
