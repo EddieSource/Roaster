@@ -2,6 +2,8 @@ package com.roaster.roaster.file;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Base64;
 import java.util.UUID;
 
@@ -41,5 +43,17 @@ public class FileService {
 	public String detectType(byte[] fileArr) {
 		Tika tika = new Tika(); 
 		return tika.detect(fileArr); 
+	}
+
+	public void deleteProfileImage(String image) {
+		try {
+			Files.deleteIfExists(Paths.get(appConfiguration.getFullProfileImagesPath()+"/"+image)); 
+		}
+		catch (IOException e) {
+			e.printStackTrace();
+		}
+		
+		
+		
 	}
 }
