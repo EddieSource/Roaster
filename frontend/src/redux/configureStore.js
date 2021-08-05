@@ -25,6 +25,7 @@ const configureStore = (addLogger = true) => {
     ? applyMiddleware(thunk, logger)
     : applyMiddleware(thunk);
   const store = createStore(authReducer, persistedState, middleware);
+  // whenever our store state change, update our local storage(cache)
   store.subscribe(() => {
     localStorage.setItem("roaster-auth", JSON.stringify(store.getState()));
     apiCalls.setAuthorizationHeader(store.getState());
