@@ -11,6 +11,7 @@ const UserPage = (props) => {
   const [originalDisplayName, setOriginalDisplayName] = useState();
   const [pendingUpdateCall, setPendingUpdateCall] = useState(false);
   const [image, setImage] = useState();
+  const [errors, setErrors] = useState({});
 
   useEffect(() => {
     const loadUser = () => {
@@ -69,7 +70,12 @@ const UserPage = (props) => {
         setPendingUpdateCall(false);
       })
       .catch((error) => {
+        let errors = {};
+        if (error.response.data.validationErrors) {
+          errors = error.response.data.validationErrors;
+        }
         setPendingUpdateCall(false);
+        setErrors(errors);
       });
   };
 
@@ -125,6 +131,7 @@ const UserPage = (props) => {
         pendingUpdateCall={pendingUpdateCall}
         loadedImage={image}
         onFileSelect={onFileSelect}
+        errors={errors}
       />
     );
   }
