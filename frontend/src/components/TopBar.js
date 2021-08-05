@@ -1,10 +1,32 @@
-import React from "react";
+import React, { useState, useRef, useEffect } from "react";
 import logo from "../assets/roaster-logo.png";
 import { Link } from "react-router-dom";
 import { connect } from "react-redux";
 import ProfileImageWithDefault from "./ProfileImageWithDefault";
 
 const TopBar = (props) => {
+  const [dropDownVisible, setDropDownVisible] = useState(false);
+  const actionArea = useRef();
+
+  useEffect(() => {
+    // check if we click outside of the action area
+    const onClickTracker = (event) => {
+      if (!actionArea.current) {
+        setDropDownVisible(false);
+        return;
+      }
+      if (dropDownVisible) {
+        setDropDownVisible(false);
+      } else if (actionArea.current.contains(event.target)) {
+        setDropDownVisible(true);
+      }
+    };
+    document.addEventListener("click", onClickTracker);
+    return function cleanup() {
+      document.removeEventListener("click", onClickTracker);
+    };
+  }, [actionArea, dropDownVisible]);
+
   const onClickLogOut = () => {
     const action = {
       type: "logout-success",
@@ -27,8 +49,12 @@ const TopBar = (props) => {
     </ul>
   );
   if (props.user.isLoggedIn) {
+    let dropDownClass = "p-0 shadow dropdown-menu";
+    if (dropDownVisible) {
+      dropDownClass += " show";
+    }
     links = (
-      <ul className="nav navbar-nav ml-auto">
+      <ul className="nav navbar-nav ml-auto" ref={actionArea}>
         <li className="nav-item dropdown">
           <div className="d-flex" style={{ cursor: "pointer" }}>
             <ProfileImageWithDefault
@@ -41,7 +67,7 @@ const TopBar = (props) => {
               {props.user.displayName}
             </span>
           </div>
-          <div className="p-0 shadow dropdown-menu show">
+          <div className={dropDownClass} data-testid="drop-down-menu">
             <Link to={`/${props.user.username}`} className="dropdown-item">
               My Profile
             </Link>
