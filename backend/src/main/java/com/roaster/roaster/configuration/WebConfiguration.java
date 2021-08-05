@@ -20,6 +20,7 @@ public class WebConfiguration implements WebMvcConfigurer{
 	
 	@Override
 	public void addResourceHandlers(ResourceHandlerRegistry registry) {
+		// map our frontend request to our server's file location
 		registry.addResourceHandler("/images/**")
 			.addResourceLocations("file:" + appConfiguration.getUploadPath() + "/")
 			.setCacheControl(CacheControl.maxAge(365, TimeUnit.DAYS));

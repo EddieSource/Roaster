@@ -11,6 +11,7 @@ const UserPage = (props) => {
   const [originalDisplayName, setOriginalDisplayName] = useState();
   const [pendingUpdateCall, setPendingUpdateCall] = useState(false);
   const [image, setImage] = useState();
+  const [errors, setErrors] = useState({});
 
   useEffect(() => {
     const loadUser = () => {
@@ -47,11 +48,11 @@ const UserPage = (props) => {
     setOriginalDisplayName();
     setInEditMode(false);
     setImage();
+    setErrors({});
   };
 
   const onClickSave = () => {
     const userId = props.loggedInUser.id;
-    console.log("requestImage:", image);
     const userUpdate = {
       displayName: user.displayName,
       image: image && image.split(",")[1],
@@ -60,7 +61,6 @@ const UserPage = (props) => {
     apiCalls
       .updateUser(userId, userUpdate)
       .then((response) => {
-        console.log("respondImage:", response.data.image);
         const updatedUser = { ...user };
         updatedUser.image = response.data.image;
 
@@ -71,7 +71,12 @@ const UserPage = (props) => {
         setPendingUpdateCall(false);
       })
       .catch((error) => {
+        let errors = {};
+        if (error.response.data.validationErrors) {
+          errors = error.response.data.validationErrors;
+        }
         setPendingUpdateCall(false);
+        setErrors(errors);
       });
   };
 
@@ -82,16 +87,25 @@ const UserPage = (props) => {
     }
     updatedUser.displayName = event.target.value;
     setUser(updatedUser);
+
+    const updateErrors = errors;
+    updateErrors.displayName = undefined;
+    setErrors(updateErrors);
   };
 
   const onFileSelect = (event) => {
     if (event.target.files.length === 0) {
       return;
     }
+
+    const updateErrors = errors;
+    updateErrors.image = undefined;
+
     const file = event.target.files[0];
     let reader = new FileReader();
     reader.onloadend = () => {
       setImage(reader.result);
+      setErrors(updateErrors);
     };
     reader.readAsDataURL(file);
   };
@@ -127,6 +141,7 @@ const UserPage = (props) => {
         pendingUpdateCall={pendingUpdateCall}
         loadedImage={image}
         onFileSelect={onFileSelect}
+        errors={errors}
       />
     );
   }

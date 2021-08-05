@@ -44,6 +44,13 @@
 		    <version>2.6</version>
 		</dependency>
 		
+		<!-- https://mvnrepository.com/artifact/org.apache.tika/tika-core -->
+		<dependency>
+		    <groupId>org.apache.tika</groupId>
+		    <artifactId>tika-core</artifactId>
+		    <version>1.22</version>
+		</dependency>
+		
 		
 		
 		<dependency>
