@@ -69,6 +69,12 @@ const UserPage = (props) => {
         setOriginalDisplayName();
         setImage();
         setPendingUpdateCall(false);
+
+        const action = {
+          type: "update-success",
+          payload: updatedUser,
+        };
+        props.dispatch(action);
       })
       .catch((error) => {
         let errors = {};
