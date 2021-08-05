@@ -1,5 +1,10 @@
 import React from "react";
-import { render, fireEvent, waitFor } from "@testing-library/react";
+import {
+  render,
+  fireEvent,
+  waitFor,
+  waitForElementToBeRemoved,
+} from "@testing-library/react";
 import UserPage from "./UserPage";
 import * as apiCalls from "../api/apiCalls";
 import { Provider } from "react-redux";
@@ -425,6 +430,57 @@ describe("UserPage", () => {
         "Only PNG and JPG files are allowed"
       );
       expect(errorMessage).toBeInTheDocument();
+    });
+    it("removes validation error for displayName when user changes the displayName", async () => {
+      const { container, queryByRole, findByText } = await setupForEdit();
+      apiCalls.updateUser = jest.fn().mockRejectedValue(mockFailUpdateUser);
+
+      const saveButton = queryByRole("button", { name: "Save" });
+      fireEvent.click(saveButton);
+      const errorMessage = await findByText(
+        "It must have minimum 4 and maximum 255 characters"
+      );
+
+      const displayInput = container.querySelectorAll("input")[0];
+      fireEvent.change(displayInput, { target: { value: "new-display-name" } });
+
+      expect(errorMessage).not.toBeInTheDocument();
+    });
+    it("removes validation error for file when user changes the file", async () => {
+      const { container, queryByRole, findByText } = await setupForEdit();
+      apiCalls.updateUser = jest.fn().mockRejectedValue(mockFailUpdateUser);
+
+      const saveButton = queryByRole("button", { name: "Save" });
+      fireEvent.click(saveButton);
+      const errorMessage = await findByText(
+        "Only PNG and JPG files are allowed"
+      );
+
+      const fileInput = container.querySelectorAll("input")[1];
+
+      const newFile = new File(["another content"], "example2.png", {
+        type: "image/png",
+      });
+      fireEvent.change(fileInput, { target: { files: [newFile] } });
+
+      await waitFor(() => {
+        expect(errorMessage).not.toBeInTheDocument();
+      });
+    });
+    it("removes validation error if user cancels", async () => {
+      const { queryByText, queryByRole } = await setupForEdit();
+      apiCalls.updateUser = jest.fn().mockRejectedValue(mockFailUpdateUser);
+
+      const saveButton = queryByRole("button", { name: "Save" });
+      fireEvent.click(saveButton);
+      await waitForElementToBeRemoved(() => queryByText("Loading..."));
+      fireEvent.click(queryByText("Cancel"));
+
+      fireEvent.click(queryByText("Edit"));
+      const errorMessage = queryByText(
+        "It must have minimum 4 and maximum 255 characters"
+      );
+      expect(errorMessage).not.toBeInTheDocument();
     });
   });
 });

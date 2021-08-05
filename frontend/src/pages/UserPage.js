@@ -48,6 +48,7 @@ const UserPage = (props) => {
     setOriginalDisplayName();
     setInEditMode(false);
     setImage();
+    setErrors({});
   };
 
   const onClickSave = () => {
@@ -86,16 +87,25 @@ const UserPage = (props) => {
     }
     updatedUser.displayName = event.target.value;
     setUser(updatedUser);
+
+    const updateErrors = errors;
+    updateErrors.displayName = undefined;
+    setErrors(updateErrors);
   };
 
   const onFileSelect = (event) => {
     if (event.target.files.length === 0) {
       return;
     }
+
+    const updateErrors = errors;
+    updateErrors.image = undefined;
+
     const file = event.target.files[0];
     let reader = new FileReader();
     reader.onloadend = () => {
       setImage(reader.result);
+      setErrors(updateErrors);
     };
     reader.readAsDataURL(file);
   };
