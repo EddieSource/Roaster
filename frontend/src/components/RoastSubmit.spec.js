@@ -1,5 +1,5 @@
 import React from "react";
-import { render } from "@testing-library/react";
+import { render, fireEvent } from "@testing-library/react";
 import RoastSubmit from "./RoastSubmit";
 import { Provider } from "react-redux";
 import { createStore } from "redux";
@@ -41,6 +41,44 @@ describe("RoastSubmit", () => {
       const { container } = setup();
       const image = container.querySelector("img");
       expect(image.src).toContain("/images/profile/" + defaultState.image);
+    });
+  });
+  describe("Interactions", () => {
+    let textArea;
+    const setupFocused = () => {
+      const rendered = setup();
+      textArea = rendered.container.querySelector("textarea");
+      fireEvent.focus(textArea);
+      return rendered;
+    };
+
+    it("displays 3 rows when focused to textarea", () => {
+      setupFocused();
+      expect(textArea.rows).toBe(3);
+    });
+
+    it("displays Post button when focused to textarea", () => {
+      const { queryByText } = setupFocused();
+      const postButton = queryByText("Post");
+      expect(postButton).toBeInTheDocument();
+    });
+
+    it("displays Cancel button when focused to textarea", () => {
+      const { queryByText } = setupFocused();
+      const cancelButton = queryByText("Cancel");
+      expect(cancelButton).toBeInTheDocument();
+    });
+
+    it("does not display Post button when not focused to textarea", () => {
+      const { queryByText } = setup();
+      const postButton = queryByText("Post");
+      expect(postButton).not.toBeInTheDocument();
+    });
+
+    it("does not display Cancel button when not focused to textarea", () => {
+      const { queryByText } = setup();
+      const cancelButton = queryByText("Cancel");
+      expect(cancelButton).not.toBeInTheDocument();
     });
   });
 });
