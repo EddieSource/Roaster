@@ -2,11 +2,13 @@ package com.roaster.roaster.user;
 
 import java.beans.Transient;
 import java.util.Collection;
+import java.util.List;
 
 import javax.persistence.Entity;
-
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 import javax.validation.constraints.NotNull;
@@ -19,6 +21,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonView;
+import com.roaster.roaster.roast.Roast;
 
 import lombok.Data;
 
@@ -52,7 +55,10 @@ public class User implements UserDetails {
 	private String password;
 	
 	private String image; 
-
+	
+	@OneToMany(mappedBy = "user", fetch=FetchType.EAGER)
+	private List<Roast> roasts; 
+	
 	@Override
 	@Transient
 	public Collection<? extends GrantedAuthority> getAuthorities() {

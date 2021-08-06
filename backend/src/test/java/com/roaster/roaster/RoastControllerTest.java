@@ -7,6 +7,10 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
+import javax.persistence.PersistenceUnit;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +25,7 @@ import org.springframework.test.context.ActiveProfiles;
 import com.roaster.roaster.error.ApiError;
 import com.roaster.roaster.roast.Roast;
 import com.roaster.roaster.roast.RoastRepository;
+import com.roaster.roaster.user.User;
 import com.roaster.roaster.user.UserRepository;
 import com.roaster.roaster.user.UserService;
 
@@ -40,6 +45,9 @@ public class RoastControllerTest {
 	
 	@Autowired
 	RoastRepository roastRepository; 
+	
+	@PersistenceUnit
+	private EntityManagerFactory entityManagerFactory; 
 	
 	@BeforeEach
 	public void cleanup() {
@@ -147,6 +155,31 @@ public class RoastControllerTest {
 		assertThat(validationErrors.get("content")).isNotNull();
 	}
 	
+	@Test
+	public void postRoast_whenRoastIsValidAndUserIsAuthorized_roastSavedWithAuthenticatedUserInfo() {
+		userService.save(TestUtil.createValidUser("user1"));
+		authenticate("user1");
+		Roast roast = TestUtil.createValidRoast();
+		postRoast(roast, Object.class);
+		
+		Roast inDB = roastRepository.findAll().get(0);
+		
+		assertThat(inDB.getUser().getUsername()).isEqualTo("user1");
+	}
+	
+	@Test
+	public void postRoast_whenRoastIsValidAndUserIsAuthorized_roastCanBeAccessedFromUserEntity() {
+		User user = userService.save(TestUtil.createValidUser("user1"));
+		authenticate("user1");
+		Roast roast = TestUtil.createValidRoast();
+		postRoast(roast, Object.class);
+		
+		EntityManager entityManager = entityManagerFactory.createEntityManager();
+		
+		User inDBUser = entityManager.find(User.class, user.getId());
+		assertThat(inDBUser.getRoasts().size()).isEqualTo(1);
+		
+	}
 	
 	private <T> ResponseEntity<T> postRoast(Roast roast, Class<T> responseType) {
 		return testRestTemplate.postForEntity(API_1_0_ROASTS, roast, responseType);
