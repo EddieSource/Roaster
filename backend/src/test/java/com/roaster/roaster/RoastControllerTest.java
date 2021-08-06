@@ -3,6 +3,10 @@ package com.roaster.roaster;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -89,6 +93,60 @@ public class RoastControllerTest {
 		
 		assertThat(inDB.getTimestamp()).isNotNull();
 	}
+	
+	@Test
+	public void postRoast_whenRoastContentNullAndUserIsAuthorized_receiveBadRequest() {
+		userService.save(TestUtil.createValidUser("user1"));
+		authenticate("user1");
+		Roast roast = new Roast();
+		ResponseEntity<Object> response = postRoast(roast, Object.class);
+		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+	}
+	
+
+	@Test
+	public void postRoast_whenRoastContentLessThan10CharactersAndUserIsAuthorized_receiveBadRequest() {
+		userService.save(TestUtil.createValidUser("user1"));
+		authenticate("user1");
+		Roast roast = new Roast();
+		roast.setContent("123456789");
+		ResponseEntity<Object> response = postRoast(roast, Object.class);
+		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+	}
+	
+	@Test
+	public void postRoast_whenRoastContentIs5000CharactersAndUserIsAuthorized_receiveOk() {
+		userService.save(TestUtil.createValidUser("user1"));
+		authenticate("user1");
+		Roast roast = new Roast();
+		String veryLongString = IntStream.rangeClosed(1, 5000).mapToObj(i -> "x").collect(Collectors.joining());
+		roast.setContent(veryLongString);
+		ResponseEntity<Object> response = postRoast(roast, Object.class);
+		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+	}
+	
+	
+	@Test
+	public void postRoast_whenRoastContentMoreThan5000CharactersAndUserIsAuthorized_receiveBadRequest() {
+		userService.save(TestUtil.createValidUser("user1"));
+		authenticate("user1");
+		Roast roast = new Roast();
+		String veryLongString = IntStream.rangeClosed(1, 5001).mapToObj(i -> "x").collect(Collectors.joining());
+		roast.setContent(veryLongString);
+		ResponseEntity<Object> response = postRoast(roast, Object.class);
+		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+	}
+	
+	@Test
+	public void postRoast_whenRoastContentNullAndUserIsAuthorized_receiveApiErrorWithValidationErrors() {
+		userService.save(TestUtil.createValidUser("user1"));
+		authenticate("user1");
+		Roast roast = new Roast();
+		ResponseEntity<ApiError> response = postRoast(roast, ApiError.class);
+		Map<String, String> validationErrors = response.getBody().getValidationErrors();
+		assertThat(validationErrors.get("content")).isNotNull();
+	}
+	
 	
 	private <T> ResponseEntity<T> postRoast(Roast roast, Class<T> responseType) {
 		return testRestTemplate.postForEntity(API_1_0_ROASTS, roast, responseType);
