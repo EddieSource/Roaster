@@ -1,5 +1,6 @@
 package com.roaster.roaster;
 
+import com.roaster.roaster.roast.Roast;
 import com.roaster.roaster.user.User;
 
 public class TestUtil {
@@ -16,5 +17,11 @@ public class TestUtil {
 		User user = createValidUser(); 
 		user.setUsername(username);
 		return user; 
+	}
+	
+	public static Roast createValidRoast() {
+		Roast roast = new Roast();
+		roast.setContent("test content for the test roast");
+		return roast;
 	}
 }
