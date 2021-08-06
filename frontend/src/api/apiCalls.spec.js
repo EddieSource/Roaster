@@ -77,4 +77,14 @@ describe("apiCalls", () => {
       expect(path).toBe("http://localhost:8080/api/1.0/users/5");
     });
   });
+
+  describe("postRoast", () => {
+    it("calls /api/1.0/roasts", () => {
+      const mockPostRoast = jest.fn();
+      axios.post = mockPostRoast;
+      apiCalls.postRoast();
+      const path = mockPostRoast.mock.calls[0][0];
+      expect(path).toBe("http://localhost:8080/api/1.0/roasts");
+    });
+  });
 });

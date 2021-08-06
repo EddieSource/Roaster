@@ -32,3 +32,7 @@ export const getUser = (username) => {
 export const updateUser = (userId, body) => {
   return axios.put("http://localhost:8080/api/1.0/users/" + userId, body);
 };
+
+export const postRoast = (roast) => {
+  return axios.post("http://localhost:8080/api/1.0/roasts", roast);
+};
