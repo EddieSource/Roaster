@@ -2,6 +2,8 @@ package com.roaster.roaster.roast;
 
 import java.util.Date;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.roaster.roaster.user.User;
@@ -15,9 +17,13 @@ public class RoastService {
 		this.roastRepository = roastRepository;
 	} 
 	
-	public void save(User user, Roast roast) {
+	public Roast save(User user, Roast roast) {
 		roast.setTimestamp(new Date());
 		roast.setUser(user);
-		roastRepository.save(roast); 
+		return roastRepository.save(roast); 
+	}
+
+	public Page<Roast> getAllRoasts(Pageable pageable) {
+		return roastRepository.findAll(pageable);
 	}
 }

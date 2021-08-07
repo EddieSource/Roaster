@@ -17,6 +17,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.support.BasicAuthenticationInterceptor;
@@ -25,6 +27,8 @@ import org.springframework.test.context.ActiveProfiles;
 import com.roaster.roaster.error.ApiError;
 import com.roaster.roaster.roast.Roast;
 import com.roaster.roaster.roast.RoastRepository;
+import com.roaster.roaster.roast.RoastService;
+import com.roaster.roaster.roast.vm.RoastVM;
 import com.roaster.roaster.user.User;
 import com.roaster.roaster.user.UserRepository;
 import com.roaster.roaster.user.UserService;
@@ -44,7 +48,10 @@ public class RoastControllerTest {
 	UserRepository userRepository;
 	
 	@Autowired
-	RoastRepository roastRepository; 
+	RoastRepository roastRepository;
+	
+	@Autowired
+	RoastService roastService; 
 	
 	@PersistenceUnit
 	private EntityManagerFactory entityManagerFactory; 
@@ -179,6 +186,54 @@ public class RoastControllerTest {
 		User inDBUser = entityManager.find(User.class, user.getId());
 		assertThat(inDBUser.getRoasts().size()).isEqualTo(1);
 		
+	}
+	
+	@Test
+	public void postRoast_whenRoastIsValidAndUserIsAuthorized_receiveRoastVM() {
+		userService.save(TestUtil.createValidUser("user1"));
+		authenticate("user1");
+		Roast roast = TestUtil.createValidRoast();
+		ResponseEntity<RoastVM> response = postRoast(roast, RoastVM.class);
+		assertThat(response.getBody().getUser().getUsername()).isEqualTo("user1");
+	}
+
+	
+	@Test
+	public void getRoasts_whenThereAreNoRoasts_receiveOk() {
+		ResponseEntity<Object> response = getRoasts(new ParameterizedTypeReference<Object>() {});
+		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+	}
+	
+	@Test
+	public void getRoasts_whenThereAreNoRoasts_receivePageWithZeroItems() {
+		ResponseEntity<TestPage<Object>> response = getRoasts(new ParameterizedTypeReference<TestPage<Object>>() {});
+		assertThat(response.getBody().getTotalElements()).isEqualTo(0);
+	}
+
+	@Test
+	public void getRoasts_whenThereAreRoasts_receivePageWithItems() {
+		User user = userService.save(TestUtil.createValidUser("user1"));
+		roastService.save(user, TestUtil.createValidRoast());
+		roastService.save(user, TestUtil.createValidRoast());
+		roastService.save(user, TestUtil.createValidRoast());
+		
+		ResponseEntity<TestPage<Object>> response = getRoasts(new ParameterizedTypeReference<TestPage<Object>>() {});
+		assertThat(response.getBody().getTotalElements()).isEqualTo(3);
+	}
+	
+	@Test
+	public void getRoasts_whenThereAreRoasts_receivePageWithRoastVM() {
+		User user = userService.save(TestUtil.createValidUser("user1"));
+		roastService.save(user, TestUtil.createValidRoast());
+		
+		ResponseEntity<TestPage<RoastVM>> response = getRoasts(new ParameterizedTypeReference<TestPage<RoastVM>>() {});
+		RoastVM storedRoast = response.getBody().getContent().get(0);
+		assertThat(storedRoast.getUser().getUsername()).isEqualTo("user1");
+	}
+
+	
+	public <T> ResponseEntity<T> getRoasts(ParameterizedTypeReference<T> responseType){
+		return testRestTemplate.exchange(API_1_0_ROASTS, HttpMethod.GET, null, responseType);
 	}
 	
 	private <T> ResponseEntity<T> postRoast(Roast roast, Class<T> responseType) {
