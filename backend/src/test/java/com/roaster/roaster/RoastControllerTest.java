@@ -11,8 +11,10 @@ import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.PersistenceUnit;
 
+import org.junit.FixMethodOrder;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.runners.MethodSorters;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
@@ -231,14 +233,79 @@ public class RoastControllerTest {
 		assertThat(storedRoast.getUser().getUsername()).isEqualTo("user1");
 	}
 
+	@Test
+	public void getRoastsOfUser_whenUserExists_receiveOk() {
+		userService.save(TestUtil.createValidUser("user1"));
+		ResponseEntity<Object> response = getRoastsOfUser("user1", new ParameterizedTypeReference<Object>() {});
+		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+	}
+	
+	@Test
+	public void getRoastsOfUser_whenUserDoesNotExist_receiveNotFound() {
+		ResponseEntity<Object> response = getRoastsOfUser("unknown-user", new ParameterizedTypeReference<Object>() {});
+		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+	}
+	
+	
+	@Test
+	public void getRoastsOfUser_whenUserExists_receivePageWithZeroRoasts() {
+		userService.save(TestUtil.createValidUser("user1"));
+		ResponseEntity<TestPage<Object>> response = getRoastsOfUser("user1", new ParameterizedTypeReference<TestPage<Object>>() {});
+		assertThat(response.getBody().getTotalElements()).isEqualTo(0);
+	}
+	
+	@Test
+	public void getRoastsOfUser_whenUserExistWithRoast_receivePageWithRoastVM() {
+		User user = userService.save(TestUtil.createValidUser("user1"));
+		roastService.save(user, TestUtil.createValidRoast());
+		
+		ResponseEntity<TestPage<RoastVM>> response = getRoastsOfUser("user1", new ParameterizedTypeReference<TestPage<RoastVM>>() {});
+		RoastVM storedRoast = response.getBody().getContent().get(0);
+		assertThat(storedRoast.getUser().getUsername()).isEqualTo("user1");
+	}
+	
+	@Test
+	public void getRoastsOfUser_whenUserExistWithMultipleRoasts_receivePageWithMatchingRoastsCount() {
+		User user = userService.save(TestUtil.createValidUser("user1"));
+		roastService.save(user, TestUtil.createValidRoast());
+		roastService.save(user, TestUtil.createValidRoast());
+		roastService.save(user, TestUtil.createValidRoast());
+		
+		ResponseEntity<TestPage<RoastVM>> response = getRoastsOfUser("user1", new ParameterizedTypeReference<TestPage<RoastVM>>() {});
+		assertThat(response.getBody().getTotalElements()).isEqualTo(3);
+	}
+	
+	@Test
+	public void getRoastsOfUser_whenMultipleUserExistWithMultipleRoasts_receivePageWithMatchingRoastsCount() {
+		User userWithThreeRoasts = userService.save(TestUtil.createValidUser("user1"));
+		IntStream.rangeClosed(1, 3).forEach(i -> {
+			roastService.save(userWithThreeRoasts, TestUtil.createValidRoast());	
+		});
+		
+		User userWithFiveRoasts = userService.save(TestUtil.createValidUser("user2"));
+		IntStream.rangeClosed(1, 5).forEach(i -> {
+			roastService.save(userWithFiveRoasts, TestUtil.createValidRoast());	
+		});
+		
+		
+		ResponseEntity<TestPage<RoastVM>> response = getRoastsOfUser(userWithFiveRoasts.getUsername(), new ParameterizedTypeReference<TestPage<RoastVM>>() {});
+		assertThat(response.getBody().getTotalElements()).isEqualTo(5);
+	}
+
 	
 	public <T> ResponseEntity<T> getRoasts(ParameterizedTypeReference<T> responseType){
 		return testRestTemplate.exchange(API_1_0_ROASTS, HttpMethod.GET, null, responseType);
 	}
 	
+	public <T> ResponseEntity<T> getRoastsOfUser(String username, ParameterizedTypeReference<T> responseType){
+		String path = "/api/1.0/users/" + username + "/roasts";
+		return testRestTemplate.exchange(path, HttpMethod.GET, null, responseType);
+	}
+
 	private <T> ResponseEntity<T> postRoast(Roast roast, Class<T> responseType) {
 		return testRestTemplate.postForEntity(API_1_0_ROASTS, roast, responseType);
 	}
+
 	
 	private void authenticate(String username) {
 		testRestTemplate.getRestTemplate()
