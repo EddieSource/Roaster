@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import * as apiCalls from "../api/apiCalls";
 import Spinner from "./Spinner";
+import RoastView from "./RoastView";
 
 const RoastFeed = (props) => {
   const [page, setPage] = useState({ content: [] });
@@ -29,7 +30,7 @@ const RoastFeed = (props) => {
   return (
     <div>
       {page.content.map((roast) => {
-        return <span key={roast.id}>{roast.content}</span>;
+        return <RoastView key={roast.id} roast={roast} />;
       })}
     </div>
   );
