@@ -1,9 +1,15 @@
 import React from "react";
-import { render, fireEvent } from "@testing-library/react";
+import {
+  render,
+  fireEvent,
+  waitFor,
+  waitForElementToBeRemoved,
+} from "@testing-library/react";
 import RoastSubmit from "./RoastSubmit";
 import { Provider } from "react-redux";
 import { createStore } from "redux";
 import authReducer from "../redux/authReducer";
+import * as apiCalls from "../api/apiCalls";
 
 const defaultState = {
   id: 1,
@@ -79,6 +85,178 @@ describe("RoastSubmit", () => {
       const { queryByText } = setup();
       const cancelButton = queryByText("Cancel");
       expect(cancelButton).not.toBeInTheDocument();
+    });
+    it("returns back to unfocused state after clicking the cancel", () => {
+      const { queryByText } = setupFocused();
+      const cancelButton = queryByText("Cancel");
+      fireEvent.click(cancelButton);
+      expect(queryByText("Cancel")).not.toBeInTheDocument();
+    });
+    it("calls postRoast with roast request object when clicking Post", () => {
+      const { queryByText } = setupFocused();
+      fireEvent.change(textArea, { target: { value: "Test roast content" } });
+
+      const postButton = queryByText("Post");
+
+      apiCalls.postRoast = jest.fn().mockResolvedValue({});
+      fireEvent.click(postButton);
+
+      expect(apiCalls.postRoast).toHaveBeenCalledWith({
+        content: "Test roast content",
+      });
+    });
+    it("returns back to unfocused state after successful postRoast action", async () => {
+      const { queryByText } = setupFocused();
+      fireEvent.change(textArea, { target: { value: "Test roast content" } });
+
+      const roastifyButton = queryByText("Post");
+
+      apiCalls.postRoast = jest.fn().mockResolvedValue({});
+      fireEvent.click(roastifyButton);
+
+      await waitFor(() => {
+        expect(queryByText("Post")).not.toBeInTheDocument();
+      });
+    });
+    it("clear content after successful postRoast action", async () => {
+      const { queryByText } = setupFocused();
+      fireEvent.change(textArea, { target: { value: "Test roast content" } });
+
+      const postButton = queryByText("Post");
+
+      apiCalls.postRoast = jest.fn().mockResolvedValue({});
+      fireEvent.click(postButton);
+
+      await waitFor(() => {
+        expect(queryByText("Test roast content")).not.toBeInTheDocument();
+      });
+    });
+    it("clears content after clicking cancel", () => {
+      const { queryByText } = setupFocused();
+      fireEvent.change(textArea, { target: { value: "Test roast content" } });
+
+      fireEvent.click(queryByText("Cancel"));
+
+      expect(queryByText("Test roast content")).not.toBeInTheDocument();
+    });
+    it("disables Post button when there is postRoast api call", async () => {
+      const { queryByText } = setupFocused();
+      fireEvent.change(textArea, { target: { value: "Test roast content" } });
+
+      const postButton = queryByText("Post");
+
+      const mockFunction = jest.fn().mockImplementation(() => {
+        return new Promise((resolve, reject) => {
+          setTimeout(() => {
+            resolve({});
+          }, 300);
+        });
+      });
+
+      apiCalls.postRoast = mockFunction;
+      fireEvent.click(postButton);
+
+      fireEvent.click(postButton);
+      expect(mockFunction).toHaveBeenCalledTimes(1);
+    });
+    it("disables Cancel button when there is postRoast api call", async () => {
+      const { queryByText } = setupFocused();
+      fireEvent.change(textArea, { target: { value: "Test roast content" } });
+
+      const postButton = queryByText("Post");
+
+      const mockFunction = jest.fn().mockImplementation(() => {
+        return new Promise((resolve, reject) => {
+          setTimeout(() => {
+            resolve({});
+          }, 300);
+        });
+      });
+
+      apiCalls.postRoast = mockFunction;
+      fireEvent.click(postButton);
+
+      const cancelButton = queryByText("Cancel");
+      expect(cancelButton).toBeDisabled();
+    });
+    it("displays spinner when there is postRoast api call", async () => {
+      const { queryByText } = setupFocused();
+      fireEvent.change(textArea, { target: { value: "Test roast content" } });
+
+      const postButton = queryByText("Post");
+
+      const mockFunction = jest.fn().mockImplementation(() => {
+        return new Promise((resolve, reject) => {
+          setTimeout(() => {
+            resolve({});
+          }, 300);
+        });
+      });
+
+      apiCalls.postRoast = mockFunction;
+      fireEvent.click(postButton);
+
+      expect(queryByText("Loading...")).toBeInTheDocument();
+    });
+    it("enables Post button when postRoast api call fails", async () => {
+      const { queryByText } = setupFocused();
+      fireEvent.change(textArea, { target: { value: "Test roast content" } });
+
+      const postButton = queryByText("Post");
+
+      const mockFunction = jest.fn().mockRejectedValueOnce({
+        response: {
+          data: {
+            validationErrors: {
+              content: "It must have minimum 10 and maximum 5000 characters",
+            },
+          },
+        },
+      });
+
+      apiCalls.postRoast = mockFunction;
+      fireEvent.click(postButton);
+
+      await waitFor(() => {
+        expect(queryByText("Post")).not.toBeDisabled();
+      });
+    });
+    it("enables Cancel button when postRoast api call fails", async () => {
+      const { queryByText } = setupFocused();
+      fireEvent.change(textArea, { target: { value: "Test roast content" } });
+
+      const postButton = queryByText("Post");
+
+      const mockFunction = jest.fn().mockRejectedValueOnce({
+        response: {
+          data: {
+            validationErrors: {
+              content: "It must have minimum 10 and maximum 5000 characters",
+            },
+          },
+        },
+      });
+
+      apiCalls.postRoast = mockFunction;
+      fireEvent.click(postButton);
+
+      await waitFor(() => {
+        expect(queryByText("Cancel")).not.toBeDisabled();
+      });
+    });
+    it("enables Post button after successful postRoast action", async () => {
+      const { queryByText } = setupFocused();
+      fireEvent.change(textArea, { target: { value: "Test roast content" } });
+
+      const postButton = queryByText("Post");
+
+      apiCalls.postRoast = jest.fn().mockResolvedValue({});
+      fireEvent.click(postButton);
+      await waitForElementToBeRemoved(postButton);
+      fireEvent.focus(textArea);
+      await waitFor(() => {
+        expect(queryByText("Post")).not.toBeDisabled();
+      });
     });
   });
 });

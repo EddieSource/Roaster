@@ -1,14 +1,42 @@
 import React, { Component, useState } from "react";
 import ProfileImageWithDefault from "./ProfileImageWithDefault";
 import { connect } from "react-redux";
+import * as apiCalls from "../api/apiCalls";
+import ButtonWithProgress from "./ButtonWithProgress";
 
 const RoastSubmit = (props) => {
   const [focused, setFocused] = useState(false);
+  const [content, setContent] = useState(undefined);
+  const [pendingApiCall, setPendingApiCall] = useState(false);
+
+  const onChangeContent = (event) => {
+    const value = event.target.value;
+    setContent(value);
+  };
+
+  const onClickPost = () => {
+    const body = {
+      content: content,
+    };
+    setPendingApiCall(true);
+
+    apiCalls
+      .postRoast(body)
+      .then((response) => {
+        setFocused(false);
+        setContent("");
+        setPendingApiCall(false);
+      })
+      .catch((error) => {
+        setPendingApiCall(false);
+      });
+  };
   const onFocus = () => {
     setFocused(true);
   };
   const onClickCancel = () => {
     setFocused(false);
+    setContent("");
   };
   return (
     <div className="card d-flex flex-row p-1">
@@ -23,13 +51,22 @@ const RoastSubmit = (props) => {
           className="form-control w-100"
           rows={focused ? 3 : 1}
           onFocus={onFocus}
+          value={content}
+          onChange={onChangeContent}
         />
         {focused && (
           <div className="text-right mt-1">
-            <button className="btn btn-success">Post</button>
+            <ButtonWithProgress
+              className="btn btn-success"
+              disabled={pendingApiCall}
+              onClick={onClickPost}
+              pendingApiCall={pendingApiCall}
+              text="Post"
+            />
             <button
               className="btn btn-light ml-1"
-              onClickCancel={onClickCancel}
+              onClick={onClickCancel}
+              disabled={pendingApiCall}
             >
               Cancel
             </button>
