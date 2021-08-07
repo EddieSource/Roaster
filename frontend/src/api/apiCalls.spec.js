@@ -87,4 +87,23 @@ describe("apiCalls", () => {
       expect(path).toBe("http://localhost:8080/api/1.0/roasts");
     });
   });
+
+  describe("loadRoasts", () => {
+    it("calls /api/1.0/roasts?page=0&size=5&sort=id,desc when no param provided", () => {
+      const mockGetRoasts = jest.fn();
+      axios.get = mockGetRoasts;
+      apiCalls.loadRoasts();
+      expect(mockGetRoasts).toBeCalledWith(
+        "http://localhost:8080/api/1.0/roasts?page=0&size=5&sort=id,desc"
+      );
+    });
+    it("calls /api/1.0/users/user1/roasts?page=0&size=5&sort=id,desc when user param provided", () => {
+      const mockGetRoasts = jest.fn();
+      axios.get = mockGetRoasts;
+      apiCalls.loadRoasts("user1");
+      expect(mockGetRoasts).toBeCalledWith(
+        "http://localhost:8080/api/1.0/users/user1/roasts?page=0&size=5&sort=id,desc"
+      );
+    });
+  });
 });

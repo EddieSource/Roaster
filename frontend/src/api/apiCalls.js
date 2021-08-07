@@ -36,3 +36,12 @@ export const updateUser = (userId, body) => {
 export const postRoast = (roast) => {
   return axios.post("http://localhost:8080/api/1.0/roasts", roast);
 };
+
+export const loadRoasts = (username) => {
+  const basePath = username
+    ? `/api/1.0/users/${username}/roasts`
+    : "/api/1.0/roasts";
+  return axios.get(
+    "http://localhost:8080" + basePath + "?page=0&size=5&sort=id,desc"
+  );
+};
