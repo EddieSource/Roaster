@@ -7,6 +7,7 @@ import {
 } from "@testing-library/react";
 import RoastFeed from "./RoastFeed";
 import * as apiCalls from "../api/apiCalls";
+import { MemoryRouter } from "react-router-dom";
 
 const mockEmptyResponse = {
   data: {
@@ -38,7 +39,11 @@ const mockSuccessGetRoastsSinglePage = {
 };
 
 const setup = (props) => {
-  return render(<RoastFeed {...props} />);
+  return render(
+    <MemoryRouter>
+      <RoastFeed {...props} />
+    </MemoryRouter>
+  );
 };
 
 describe("RoastFeed", () => {

@@ -1,6 +1,7 @@
 import React from "react";
 import { render, fireEvent } from "@testing-library/react";
 import RoastView from "./RoastView";
+import { MemoryRouter } from "react-router-dom";
 
 const loggedInStateUser1 = {
   id: 1,
@@ -26,7 +27,11 @@ const setup = (roast = roastWithoutAttachment, state = loggedInStateUser1) => {
   const oneMinute = 60 * 1000;
   const date = new Date(new Date() - oneMinute);
   roast.date = date;
-  return render(<RoastView roast={roast} />);
+  return render(
+    <MemoryRouter>
+      <RoastView roast={roast} />
+    </MemoryRouter>
+  );
 };
 
 describe("RoastView", () => {
@@ -47,6 +52,11 @@ describe("RoastView", () => {
     it("displays relative time", () => {
       const { queryByText } = setup();
       expect(queryByText("1 minute ago")).toBeInTheDocument();
+    });
+    it("has link to user page", () => {
+      const { container } = setup();
+      const anchor = container.querySelector("a");
+      expect(anchor.getAttribute("href")).toBe("/user1");
     });
   });
 });
