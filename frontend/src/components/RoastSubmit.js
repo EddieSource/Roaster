@@ -8,10 +8,12 @@ const RoastSubmit = (props) => {
   const [focused, setFocused] = useState(false);
   const [content, setContent] = useState(undefined);
   const [pendingApiCall, setPendingApiCall] = useState(false);
+  const [errors, setErrors] = useState({});
 
   const onChangeContent = (event) => {
     const value = event.target.value;
     setContent(value);
+    setErrors({});
   };
 
   const onClickPost = () => {
@@ -28,6 +30,11 @@ const RoastSubmit = (props) => {
         setPendingApiCall(false);
       })
       .catch((error) => {
+        let updatedErrors = {};
+        if (error.response.data && error.response.data.validationErrors) {
+          updatedErrors = error.response.data.validationErrors;
+        }
+        setErrors(updatedErrors);
         setPendingApiCall(false);
       });
   };
@@ -37,7 +44,14 @@ const RoastSubmit = (props) => {
   const onClickCancel = () => {
     setFocused(false);
     setContent("");
+    setErrors({});
   };
+
+  let textAreaClassName = "form-control w-100";
+  if (errors.content) {
+    textAreaClassName += " is-invalid";
+  }
+
   return (
     <div className="card d-flex flex-row p-1">
       <ProfileImageWithDefault
@@ -48,12 +62,15 @@ const RoastSubmit = (props) => {
       />
       <div className="flex-fill">
         <textarea
-          className="form-control w-100"
+          className={textAreaClassName}
           rows={focused ? 3 : 1}
           onFocus={onFocus}
           value={content}
           onChange={onChangeContent}
         />
+        {errors.content && (
+          <span className="invalid-feedback">{errors.content}</span>
+        )}
         {focused && (
           <div className="text-right mt-1">
             <ButtonWithProgress

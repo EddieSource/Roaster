@@ -258,5 +258,87 @@ describe("RoastSubmit", () => {
         expect(queryByText("Post")).not.toBeDisabled();
       });
     });
+    it("displays validation error for content", async () => {
+      const { queryByText } = setupFocused();
+      fireEvent.change(textArea, { target: { value: "Test roast content" } });
+
+      const postButton = queryByText("Post");
+
+      const mockFunction = jest.fn().mockRejectedValueOnce({
+        response: {
+          data: {
+            validationErrors: {
+              content: "It must have minimum 10 and maximum 5000 characters",
+            },
+          },
+        },
+      });
+
+      apiCalls.postRoast = mockFunction;
+      fireEvent.click(postButton);
+
+      await waitFor(() => {
+        expect(
+          queryByText("It must have minimum 10 and maximum 5000 characters")
+        ).toBeInTheDocument();
+      });
+    });
+    it("clears validation error after clicking cancel", async () => {
+      const { queryByText, findByText } = setupFocused();
+      fireEvent.change(textArea, { target: { value: "Test roast content" } });
+
+      const postButton = queryByText("Post");
+
+      const mockFunction = jest.fn().mockRejectedValueOnce({
+        response: {
+          data: {
+            validationErrors: {
+              content: "It must have minimum 10 and maximum 5000 characters",
+            },
+          },
+        },
+      });
+
+      apiCalls.postRoast = mockFunction;
+      fireEvent.click(postButton);
+
+      const error = await findByText(
+        "It must have minimum 10 and maximum 5000 characters"
+      );
+
+      fireEvent.click(queryByText("Cancel"));
+
+      expect(error).not.toBeInTheDocument();
+    });
+    it("clears validation error after content is changed", async () => {
+      const { queryByText, findByText } = setupFocused();
+      fireEvent.change(textArea, { target: { value: "Test roast content" } });
+
+      const postButton = queryByText("Post");
+
+      const mockFunction = jest.fn().mockRejectedValueOnce({
+        response: {
+          data: {
+            validationErrors: {
+              content: "It must have minimum 10 and maximum 5000 characters",
+            },
+          },
+        },
+      });
+
+      apiCalls.postRoast = mockFunction;
+      fireEvent.click(postButton);
+      const error = await findByText(
+        "It must have minimum 10 and maximum 5000 characters"
+      );
+
+      fireEvent.change(textArea, {
+        target: { value: "Test roast content updated" },
+      });
+
+      expect(error).not.toBeInTheDocument();
+    });
   });
 });
+
+console.error = () => {};
