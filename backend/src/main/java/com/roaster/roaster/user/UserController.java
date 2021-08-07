@@ -68,20 +68,4 @@ public class UserController {
 		return new UserVM(updated); 
 	}
 	
-	@ExceptionHandler({MethodArgumentNotValidException.class})
-	@ResponseStatus(HttpStatus.BAD_REQUEST) // tell spring to return response code
-	ApiError HandlerValidationException(MethodArgumentNotValidException exception, HttpServletRequest request) {
-		ApiError apiError = new ApiError(400, "Validation error", request.getServletPath()); 
-		
-		BindingResult result = exception.getBindingResult(); 
-		Map<String, String> validationErrors = new HashMap<>();
-		// map each field error to an error message
-		for(FieldError fieldError: result.getFieldErrors()) {
-			validationErrors.put(fieldError.getField(), fieldError.getDefaultMessage()); 
-		}
-		apiError.setValidationErrors(validationErrors);		
-		
-		return apiError; 
-	}
-	
 }
