@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import * as apiCalls from "../api/apiCalls";
 import ProfileCard from "../components/ProfileCard";
 import { connect } from "react-redux";
+import RoastFeed from "../components/RoastFeed";
 
 const UserPage = (props) => {
   const [user, setUser] = useState();
@@ -151,7 +152,16 @@ const UserPage = (props) => {
       />
     );
   }
-  return <div data-testid="userpage">{pageContent}</div>;
+  return (
+    <div data-testid="userpage">
+      <div className="row">
+        <div className="col">{pageContent}</div>
+        <div className="col">
+          <RoastFeed user={props.match.params.username} />
+        </div>
+      </div>
+    </div>
+  );
 };
 
 UserPage.defaultProps = {
