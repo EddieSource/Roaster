@@ -2,7 +2,8 @@ import React, { useEffect, useState } from "react";
 import * as apiCalls from "../api/apiCalls";
 import ProfileCard from "../components/ProfileCard";
 import { connect } from "react-redux";
-
+import RoastFeed from "../components/RoastFeed";
+import Spinner from "../components/Spinner";
 const UserPage = (props) => {
   const [user, setUser] = useState();
   const [userNotFound, setUserNotFound] = useState(false);
@@ -119,13 +120,7 @@ const UserPage = (props) => {
   let pageContent;
 
   if (isLoadingUser) {
-    pageContent = (
-      <div className="d-flex">
-        <div className="spinner-border text-black-50 m-auto">
-          <span className="sr-only">Loading...</span>
-        </div>
-      </div>
-    );
+    pageContent = <Spinner />;
   } else if (userNotFound) {
     pageContent = (
       <div className="alert alert-danger text-center">
@@ -151,7 +146,16 @@ const UserPage = (props) => {
       />
     );
   }
-  return <div data-testid="userpage">{pageContent}</div>;
+  return (
+    <div data-testid="userpage">
+      <div className="row">
+        <div className="col">{pageContent}</div>
+        <div className="col">
+          <RoastFeed user={props.match.params.username} />
+        </div>
+      </div>
+    </div>
+  );
 };
 
 UserPage.defaultProps = {

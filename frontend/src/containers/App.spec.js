@@ -25,6 +25,14 @@ apiCalls.getUser = jest.fn().mockResolvedValue({
   },
 });
 
+apiCalls.loadRoasts = jest.fn().mockResolvedValue({
+  data: {
+    content: [],
+    number: 0,
+    size: 3,
+  },
+});
+
 const mockSuccessGetUser1 = {
   data: {
     id: 1,
@@ -322,3 +330,5 @@ describe("App", () => {
     expect(user1Info).toBeInTheDocument();
   });
 });
+
+console.error = () => {};

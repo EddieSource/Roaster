@@ -34,6 +34,14 @@ apiCalls.listUsers = jest.fn().mockResolvedValue({
   },
 });
 
+apiCalls.loadRoasts = jest.fn().mockResolvedValue({
+  data: {
+    content: [],
+    number: 0,
+    size: 3,
+  },
+});
+
 describe("HomePage", () => {
   describe("Layout", () => {
     it("has root page div", () => {
@@ -61,3 +69,5 @@ describe("HomePage", () => {
     });
   });
 });
+
+console.error = () => {};
