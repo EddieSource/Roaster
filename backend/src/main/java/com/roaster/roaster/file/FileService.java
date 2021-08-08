@@ -5,11 +5,13 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Base64;
+import java.util.Date;
 import java.util.UUID;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.tika.Tika;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.roaster.roaster.configuration.AppConfiguration;
 
@@ -55,5 +57,20 @@ public class FileService {
 		
 		
 		
+	}
+
+	public FileAttachment saveAttachment(MultipartFile file) {
+		FileAttachment fileAttachment = new FileAttachment(); 
+		fileAttachment.setDate(new Date());
+		String randomName = getRandomName(); 
+		fileAttachment.setName(randomName);
+		File target = new File(appConfiguration.getFullAttachmentsPath()+"/" + randomName); 
+		try {
+			byte[] fileAsByte = file.getBytes(); 
+			FileUtils.writeByteArrayToFile(target, fileAsByte);
+		} catch (IOException e) {
+			e.printStackTrace(); 
+		}
+		return fileAttachment;
 	}
 }

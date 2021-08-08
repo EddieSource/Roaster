@@ -25,6 +25,7 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
 import com.roaster.roaster.configuration.AppConfiguration;
+import com.roaster.roaster.file.FileAttachment;
 import com.roaster.roaster.user.UserRepository;
 import com.roaster.roaster.user.UserService;
 
@@ -57,10 +58,38 @@ public class FileUploadControllerTest {
 		ResponseEntity<Object> response = uploadFile(getRequestEntity(), Object.class);
 		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
 	}
+	
 	@Test
 	public void uploadFile_withImageFromUnauthorizedUser_receiveUnauthorized() {
 		ResponseEntity<Object> response = uploadFile(getRequestEntity(), Object.class);
 		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
+	}
+	
+	@Test
+	public void uploadFile_withImageFromAuthorizedUser_receiveFileAttachmentWithRandomName() {
+		userService.save(TestUtil.createValidUser("user1"));
+		authenticate("user1");
+		ResponseEntity<FileAttachment> response = uploadFile(getRequestEntity(), FileAttachment.class);
+		assertThat(response.getBody().getName()).isNotNull();
+		assertThat(response.getBody().getName()).isNotEqualTo("profile.png");
+	}
+	
+	@Test
+	public void uploadFile_withImageFromAuthorizedUser_receiveFileAttachmentWithDate() {
+		userService.save(TestUtil.createValidUser("user1"));
+		authenticate("user1");
+		ResponseEntity<FileAttachment> response = uploadFile(getRequestEntity(), FileAttachment.class);
+		assertThat(response.getBody().getDate()).isNotNull();
+	}
+
+	@Test
+	public void uploadFile_withImageFromAuthorizedUser_imageSavedToFolder() {
+		userService.save(TestUtil.createValidUser("user1"));
+		authenticate("user1");
+		ResponseEntity<FileAttachment> response = uploadFile(getRequestEntity(), FileAttachment.class);
+		String imagePath = appConfiguration.getFullAttachmentsPath() + "/" + response.getBody().getName();
+		File storedImage = new File(imagePath);
+		assertThat(storedImage.exists()).isTrue();
 	}
 	
 	public <T> ResponseEntity<T> uploadFile(HttpEntity<?> requestEntity, Class<T> responseType){
