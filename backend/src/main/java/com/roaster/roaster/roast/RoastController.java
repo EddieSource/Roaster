@@ -24,7 +24,7 @@ import com.roaster.roaster.shared.CurrentUser;
 import com.roaster.roaster.user.User;
 
 @RestController
-@RequestMapping("api/1.0")
+@RequestMapping("/api/1.0")
 @CrossOrigin(origins = "http://localhost:3000")
 public class RoastController {
 	
