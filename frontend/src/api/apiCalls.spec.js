@@ -106,4 +106,58 @@ describe("apiCalls", () => {
       );
     });
   });
+  describe("loadOldRoasts", () => {
+    it("calls /api/1.0/roasts/5?direction=before&page=0&size=5&sort=id,desc when roast id param provided", () => {
+      const mockGetRoasts = jest.fn();
+      axios.get = mockGetRoasts;
+      apiCalls.loadOldRoasts(5);
+      expect(mockGetRoasts).toBeCalledWith(
+        "http://localhost:8080/api/1.0/roasts/5?direction=before&page=0&size=5&sort=id,desc"
+      );
+    });
+    it("calls /api/1.0/users/user3/roasts/5?direction=before&page=0&size=5&sort=id,desc when roast id and username param provided", () => {
+      const mockGetRoasts = jest.fn();
+      axios.get = mockGetRoasts;
+      apiCalls.loadOldRoasts(5, "user3");
+      expect(mockGetRoasts).toBeCalledWith(
+        "http://localhost:8080/api/1.0/users/user3/roasts/5?direction=before&page=0&size=5&sort=id,desc"
+      );
+    });
+  });
+  describe("loadNewRoasts", () => {
+    it("calls /api/1.0/roasts/5?direction=after&sort=id,desc when roast id param provided", () => {
+      const mockGetRoasts = jest.fn();
+      axios.get = mockGetRoasts;
+      apiCalls.loadNewRoasts(5);
+      expect(mockGetRoasts).toBeCalledWith(
+        "http://localhost:8080/api/1.0/roasts/5?direction=after&sort=id,desc"
+      );
+    });
+    it("calls /api/1.0/users/user3/roasts/5?direction=after&sort=id,desc when roast id and username param provided", () => {
+      const mockGetRoasts = jest.fn();
+      axios.get = mockGetRoasts;
+      apiCalls.loadNewRoasts(5, "user3");
+      expect(mockGetRoasts).toBeCalledWith(
+        "http://localhost:8080/api/1.0/users/user3/roasts/5?direction=after&sort=id,desc"
+      );
+    });
+  });
+  describe("loadNewRoastCount", () => {
+    it("calls /api/1.0/roasts/5?direction=after&count=true when roast id param provided", () => {
+      const mockGetRoasts = jest.fn();
+      axios.get = mockGetRoasts;
+      apiCalls.loadNewRoastCount(5);
+      expect(mockGetRoasts).toBeCalledWith(
+        "http://localhost:8080/api/1.0/roasts/5?direction=after&count=true"
+      );
+    });
+    it("calls /api/1.0/users/user3/roasts/5?direction=after&count=true when roast id and username param provided", () => {
+      const mockGetRoasts = jest.fn();
+      axios.get = mockGetRoasts;
+      apiCalls.loadNewRoastCount(5, "user3");
+      expect(mockGetRoasts).toBeCalledWith(
+        "http://localhost:8080/api/1.0/users/user3/roasts/5?direction=after&count=true"
+      );
+    });
+  });
 });

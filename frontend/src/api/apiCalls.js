@@ -45,3 +45,27 @@ export const loadRoasts = (username) => {
     "http://localhost:8080" + basePath + "?page=0&size=5&sort=id,desc"
   );
 };
+
+export const loadOldRoasts = (roastId, username) => {
+  const basePath = username
+    ? `/api/1.0/users/${username}/roasts`
+    : "/api/1.0/roasts";
+  const path = `${basePath}/${roastId}?direction=before&page=0&size=5&sort=id,desc`;
+  return axios.get("http://localhost:8080" + path);
+};
+
+export const loadNewRoasts = (roastId, username) => {
+  const basePath = username
+    ? `/api/1.0/users/${username}/roasts`
+    : "/api/1.0/roasts";
+  const path = `${basePath}/${roastId}?direction=after&sort=id,desc`;
+  return axios.get("http://localhost:8080" + path);
+};
+
+export const loadNewRoastCount = (roastId, username) => {
+  const basePath = username
+    ? `/api/1.0/users/${username}/roasts`
+    : "/api/1.0/roasts";
+  const path = `${basePath}/${roastId}?direction=after&count=true`;
+  return axios.get("http://localhost:8080" + path);
+};

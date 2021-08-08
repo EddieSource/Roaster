@@ -32,6 +32,9 @@ const RoastFeed = (props) => {
       {page.content.map((roast) => {
         return <RoastView key={roast.id} roast={roast} />;
       })}
+      {page.last === false && (
+        <div className="card card-header text-content">Load More</div>
+      )}
     </div>
   );
 };

@@ -38,6 +38,40 @@ const mockSuccessGetRoastsSinglePage = {
   },
 };
 
+const mockSuccessGetRoastsFirstOfMultiPage = {
+  data: {
+    content: [
+      {
+        id: 10,
+        content: "This is the latest roast",
+        date: 1561294668539,
+        user: {
+          id: 1,
+          username: "user1",
+          displayName: "display1",
+          image: "profile1.png",
+        },
+      },
+      {
+        id: 9,
+        content: "This is roast 9",
+        date: 1561294668539,
+        user: {
+          id: 1,
+          username: "user1",
+          displayName: "display1",
+          image: "profile1.png",
+        },
+      },
+    ],
+    number: 0,
+    first: true,
+    last: false,
+    size: 5,
+    totalPages: 2,
+  },
+};
+
 const setup = (props) => {
   return render(
     <MemoryRouter>
@@ -100,6 +134,14 @@ describe("RoastFeed", () => {
       const { findByText } = setup();
       const roastContent = await findByText("This is the latest roast");
       expect(roastContent).toBeInTheDocument();
+    });
+    it("displays Load More when there are next pages", async () => {
+      apiCalls.loadRoasts = jest
+        .fn()
+        .mockResolvedValue(mockSuccessGetRoastsFirstOfMultiPage);
+      const { findByText } = setup();
+      const loadMore = await findByText("Load More");
+      expect(loadMore).toBeInTheDocument();
     });
   });
 });
