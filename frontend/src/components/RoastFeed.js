@@ -106,7 +106,7 @@ const RoastFeed = (props) => {
       {newRoastCount > 0 && (
         <div
           className="card card-header text-center"
-          onClick={!isLoadingNewRoasts && onClickLoadNew}
+          onClick={isLoadingNewRoasts ? undefined : onClickLoadNew}
           style={{ cursor: isLoadingNewRoasts ? "not-allowed" : "pointer" }}
         >
           {isLoadingNewRoasts ? <Spinner /> : newRoastCountMessage}
@@ -118,7 +118,7 @@ const RoastFeed = (props) => {
       {page.last === false && (
         <div
           className="card card-header text-content"
-          onClick={!isLoadingOldRoasts && onClickLoadMore}
+          onClick={isLoadingOldRoasts ? undefined : onClickLoadMore}
           style={{ cursor: isLoadingOldRoasts ? "not-allowed" : "pointer" }}
         >
           {isLoadingOldRoasts ? <Spinner /> : "Load More"}

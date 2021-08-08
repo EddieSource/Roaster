@@ -12,6 +12,7 @@ const RoastSubmit = (props) => {
   const [errors, setErrors] = useState({});
   const [file, setFile] = useState(undefined);
   const [image, setImage] = useState(undefined);
+  const [attachment, setAttachment] = useState(undefined);
 
   const onChangeContent = (event) => {
     const value = event.target.value;
@@ -23,27 +24,43 @@ const RoastSubmit = (props) => {
     if (event.target.files.length === 0) {
       return;
     }
-    const file = event.target.files[0];
+    const updatedFile = event.target.files[0];
     let reader = new FileReader();
     reader.onloadend = () => {
       setImage(reader.result);
-      setFile(file);
+      uploadFile(updatedFile);
     };
-    reader.readAsDataURL(file);
+    reader.readAsDataURL(updatedFile);
   };
 
+  const uploadFile = (updatedFile) => {
+    //upload file
+    const body = new FormData();
+    body.append("file", updatedFile);
+    apiCalls.postRoastFile(body).then((response) => {
+      setAttachment(response.data);
+    });
+  };
+
+  const resetState = () => {
+    setPendingApiCall(false);
+    setFocused(false);
+    setContent("");
+    setErrors({});
+    setImage(undefined);
+    setAttachment(undefined);
+  };
   const onClickPost = () => {
     const body = {
       content: content,
+      attachment: attachment,
     };
     setPendingApiCall(true);
 
     apiCalls
       .postRoast(body)
       .then((response) => {
-        setFocused(false);
-        setContent("");
-        setPendingApiCall(false);
+        resetState();
       })
       .catch((error) => {
         let updatedErrors = {};
@@ -56,13 +73,6 @@ const RoastSubmit = (props) => {
   };
   const onFocus = () => {
     setFocused(true);
-  };
-  const onClickCancel = () => {
-    setFocused(false);
-    setContent("");
-    setErrors({});
-    setImage(undefined);
-    setFile(undefined);
   };
 
   let textAreaClassName = "form-control w-100";
@@ -113,7 +123,7 @@ const RoastSubmit = (props) => {
               />
               <button
                 className="btn btn-light ml-1"
-                onClick={onClickCancel}
+                onClick={resetState}
                 disabled={pendingApiCall}
               >
                 Cancel
