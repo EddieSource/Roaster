@@ -338,6 +338,69 @@ describe("RoastSubmit", () => {
 
       expect(error).not.toBeInTheDocument();
     });
+    it("displays file attachment input when text area focused", () => {
+      const { container } = setup();
+      const textArea = container.querySelector("textarea");
+      fireEvent.focus(textArea);
+
+      const uploadInput = container.querySelector("input");
+      expect(uploadInput.type).toBe("file");
+    });
+    it("displays image component when file selected", async () => {
+      apiCalls.postRoastFile = jest.fn().mockResolvedValue({
+        data: {
+          id: 1,
+          name: "random-name.png",
+        },
+      });
+      const { container } = setup();
+      const textArea = container.querySelector("textarea");
+      fireEvent.focus(textArea);
+
+      const uploadInput = container.querySelector("input");
+      expect(uploadInput.type).toBe("file");
+
+      const file = new File(["dummy content"], "example.png", {
+        type: "image/png",
+      });
+      fireEvent.change(uploadInput, { target: { files: [file] } });
+
+      await waitFor(() => {
+        const images = container.querySelectorAll("img");
+        const attachmentImage = images[1];
+        expect(attachmentImage.src).toContain("data:image/png;base64");
+      });
+    });
+    it("removes selected image after clicking cancel", async () => {
+      apiCalls.postRoastFile = jest.fn().mockResolvedValue({
+        data: {
+          id: 1,
+          name: "random-name.png",
+        },
+      });
+      const { queryByText, container } = setupFocused();
+
+      const uploadInput = container.querySelector("input");
+      expect(uploadInput.type).toBe("file");
+
+      const file = new File(["dummy content"], "example.png", {
+        type: "image/png",
+      });
+      fireEvent.change(uploadInput, { target: { files: [file] } });
+
+      await waitFor(() => {
+        const images = container.querySelectorAll("img");
+        expect(images.length).toBe(2);
+      });
+
+      fireEvent.click(queryByText("Cancel"));
+      fireEvent.focus(textArea);
+
+      await waitFor(() => {
+        const images = container.querySelectorAll("img");
+        expect(images.length).toBe(1);
+      });
+    });
   });
 });
 

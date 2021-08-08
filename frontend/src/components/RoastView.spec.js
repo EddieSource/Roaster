@@ -45,10 +45,6 @@ describe("RoastView", () => {
       const image = container.querySelector("img");
       expect(image.src).toContain("/images/profile/profile1.png");
     });
-    it("displays displayName@user", () => {
-      const { queryByText } = setup();
-      expect(queryByText("display1@user1")).toBeInTheDocument();
-    });
     it("displays relative time", () => {
       const { queryByText } = setup();
       expect(queryByText("1 minute ago")).toBeInTheDocument();

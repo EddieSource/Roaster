@@ -109,29 +109,6 @@ const mockFailGet = {
 
 describe("UserList", () => {
   describe("Layout", () => {
-    it("has header of Users", () => {
-      const { container } = setup();
-      const header = container.querySelector("h3");
-      expect(header).toHaveTextContent("Users");
-    });
-    it("displays three items when listUser api returns three users", async () => {
-      apiCalls.listUsers = jest
-        .fn()
-        .mockResolvedValue(mockSuccessGetSinglePage);
-      const { queryByTestId } = setup();
-      await waitFor(() => {
-        const userGroup = queryByTestId("usergroup");
-        expect(userGroup.childElementCount).toBe(3);
-      });
-    });
-    it("displays the displayName@username when listUser api returns users", async () => {
-      apiCalls.listUsers = jest
-        .fn()
-        .mockResolvedValue(mockSuccessGetSinglePage);
-      const { findByText } = setup();
-      const firstUser = await findByText("display1@user1");
-      expect(firstUser).toBeInTheDocument();
-    });
     it("displays the next button when response has last value as false", async () => {
       apiCalls.listUsers = jest
         .fn()
@@ -140,22 +117,6 @@ describe("UserList", () => {
       const nextLink = await findByText("next >");
       expect(nextLink).toBeInTheDocument();
     });
-    it("hides the next button when response has last value as true", async () => {
-      apiCalls.listUsers = jest
-        .fn()
-        .mockResolvedValue(mockSuccessGetMultiPageLast);
-      const { findByText } = setup();
-      const nextLink = await findByText("next >");
-      expect(nextLink).not.toBeInTheDocument();
-    });
-    it("displays the previous button when response has first value as false", async () => {
-      apiCalls.listUsers = jest
-        .fn()
-        .mockResolvedValue(mockSuccessGetMultiPageLast);
-      const { findByText } = setup();
-      const previous = await findByText("< previous");
-      expect(previous).toBeInTheDocument();
-    });
     it("hides the previous button when response has first value as true", async () => {
       apiCalls.listUsers = jest
         .fn()
@@ -163,15 +124,6 @@ describe("UserList", () => {
       const { findByText } = setup();
       const previous = await findByText("< previous");
       expect(previous).not.toBeInTheDocument();
-    });
-    it("has link to UserPage", async () => {
-      apiCalls.listUsers = jest
-        .fn()
-        .mockResolvedValue(mockSuccessGetSinglePage);
-      const { findByText, container } = setup();
-      await findByText("display1@user1");
-      const firstAnchor = container.querySelectorAll("a")[0];
-      expect(firstAnchor.getAttribute("href")).toBe("/user1");
     });
   });
   describe("Lifecycle", () => {
@@ -215,18 +167,6 @@ describe("UserList", () => {
 
       const firstPageUser = await findByText("display1@user1");
       expect(firstPageUser).toBeInTheDocument();
-    });
-    it("displays error message when loading other page fails", async () => {
-      apiCalls.listUsers = jest
-        .fn()
-        .mockResolvedValueOnce(mockSuccessGetMultiPageLast)
-        .mockRejectedValueOnce(mockFailGet);
-      const { findByText } = setup();
-      const previousLink = await findByText("< previous");
-      fireEvent.click(previousLink);
-
-      const errorMessage = await findByText("User load failed");
-      expect(errorMessage).toBeInTheDocument();
     });
     it("hides error message when successfully loading other page", async () => {
       apiCalls.listUsers = jest
