@@ -3,6 +3,7 @@ package com.roaster.roaster;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -292,6 +293,231 @@ public class RoastControllerTest {
 		assertThat(response.getBody().getTotalElements()).isEqualTo(5);
 	}
 
+	@Test
+	public void getOldRoasts_whenThereAreNoRoasts_receiveOk() {
+		ResponseEntity<Object> response = getOldRoasts(5, new ParameterizedTypeReference<Object>() {});
+		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+	}
+	
+	@Test
+	public void getOldRoasts_whenThereAreRoasts_receivePageWithItemsBeforeProvidedId() {
+		User user = userService.save(TestUtil.createValidUser("user1"));
+		roastService.save(user, TestUtil.createValidRoast());
+		roastService.save(user, TestUtil.createValidRoast());
+		roastService.save(user, TestUtil.createValidRoast());
+		Roast fourth = roastService.save(user, TestUtil.createValidRoast());
+		roastService.save(user, TestUtil.createValidRoast());
+		
+		ResponseEntity<TestPage<Object>> response = getOldRoasts(fourth.getId(), new ParameterizedTypeReference<TestPage<Object>>() {});
+		assertThat(response.getBody().getTotalElements()).isEqualTo(3);
+	}
+	
+	@Test
+	public void getOldRoasts_whenThereAreRoasts_receivePageWithRoastVMBeforeProvidedId() {
+		User user = userService.save(TestUtil.createValidUser("user1"));
+		roastService.save(user, TestUtil.createValidRoast());
+		roastService.save(user, TestUtil.createValidRoast());
+		roastService.save(user, TestUtil.createValidRoast());
+		Roast fourth = roastService.save(user, TestUtil.createValidRoast());
+		roastService.save(user, TestUtil.createValidRoast());
+		
+		ResponseEntity<TestPage<RoastVM>> response = getOldRoasts(fourth.getId(), new ParameterizedTypeReference<TestPage<RoastVM>>() {});
+		assertThat(response.getBody().getContent().get(0).getDate()).isGreaterThan(0);
+	}
+	
+	@Test
+	public void getOldRoastsOfUser_whenUserExistThereAreNoRoasts_receiveOk() {
+		userService.save(TestUtil.createValidUser("user1"));
+		ResponseEntity<Object> response = getOldRoastsOfUser(5, "user1", new ParameterizedTypeReference<Object>() {});
+		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+	}
+	
+	@Test
+	public void getOldRoastsOfUser_whenUserExistAndThereAreRoasts_receivePageWithItemsBeforeProvidedId() {
+		User user = userService.save(TestUtil.createValidUser("user1"));
+		roastService.save(user, TestUtil.createValidRoast());
+		roastService.save(user, TestUtil.createValidRoast());
+		roastService.save(user, TestUtil.createValidRoast());
+		Roast fourth = roastService.save(user, TestUtil.createValidRoast());
+		roastService.save(user, TestUtil.createValidRoast());
+		
+		ResponseEntity<TestPage<Object>> response = getOldRoastsOfUser(fourth.getId(), "user1", new ParameterizedTypeReference<TestPage<Object>>() {});
+		assertThat(response.getBody().getTotalElements()).isEqualTo(3);
+	}
+	
+	
+	@Test
+	public void getOldRoastsOfUser_whenUserExistAndThereAreRoasts_receivePageWithRoastVMBeforeProvidedId() {
+		User user = userService.save(TestUtil.createValidUser("user1"));
+		roastService.save(user, TestUtil.createValidRoast());
+		roastService.save(user, TestUtil.createValidRoast());
+		roastService.save(user, TestUtil.createValidRoast());
+		Roast fourth = roastService.save(user, TestUtil.createValidRoast());
+		roastService.save(user, TestUtil.createValidRoast());
+		
+		ResponseEntity<TestPage<RoastVM>> response = getOldRoastsOfUser(fourth.getId(), "user1", new ParameterizedTypeReference<TestPage<RoastVM>>() {});
+		assertThat(response.getBody().getContent().get(0).getDate()).isGreaterThan(0);
+	}
+	
+	@Test
+	public void getOldRoastsOfUser_whenUserExistAndThereAreNoRoasts_receivePageWithZeroItemsBeforeProvidedId() {
+		User user = userService.save(TestUtil.createValidUser("user1"));
+		roastService.save(user, TestUtil.createValidRoast());
+		roastService.save(user, TestUtil.createValidRoast());
+		roastService.save(user, TestUtil.createValidRoast());
+		Roast fourth = roastService.save(user, TestUtil.createValidRoast());
+		roastService.save(user, TestUtil.createValidRoast());
+		
+		userService.save(TestUtil.createValidUser("user2"));
+		
+		ResponseEntity<TestPage<RoastVM>> response = getOldRoastsOfUser(fourth.getId(), "user2", new ParameterizedTypeReference<TestPage<RoastVM>>() {});
+		assertThat(response.getBody().getTotalElements()).isEqualTo(0);
+	}
+	
+	@Test
+	public void getOldRoastsOfUser_whenUserDoesNotExistThereAreNoRoasts_receiveNotFound() {
+		ResponseEntity<Object> response = getOldRoastsOfUser(5, "user1", new ParameterizedTypeReference<Object>() {});
+		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+	}
+	
+	@Test
+	public void getNewRoasts_whenThereAreRoasts_receiveListOfItemsAfterProvidedId() {
+		User user = userService.save(TestUtil.createValidUser("user1"));
+		roastService.save(user, TestUtil.createValidRoast());
+		roastService.save(user, TestUtil.createValidRoast());
+		roastService.save(user, TestUtil.createValidRoast());
+		Roast fourth = roastService.save(user, TestUtil.createValidRoast());
+		roastService.save(user, TestUtil.createValidRoast());
+		
+		ResponseEntity<List<Object>> response = getNewRoasts(fourth.getId(), new ParameterizedTypeReference<List<Object>>() {});
+		assertThat(response.getBody().size()).isEqualTo(1);
+	}
+
+	@Test
+	public void getNewRoasts_whenThereAreRoasts_receiveListOfRoastVMAfterProvidedId() {
+		User user = userService.save(TestUtil.createValidUser("user1"));
+		roastService.save(user, TestUtil.createValidRoast());
+		roastService.save(user, TestUtil.createValidRoast());
+		roastService.save(user, TestUtil.createValidRoast());
+		Roast fourth = roastService.save(user, TestUtil.createValidRoast());
+		roastService.save(user, TestUtil.createValidRoast());
+		
+		ResponseEntity<List<RoastVM>> response = getNewRoasts(fourth.getId(), new ParameterizedTypeReference<List<RoastVM>>() {});
+		assertThat(response.getBody().get(0).getDate()).isGreaterThan(0);
+	}
+	
+	@Test
+	public void getNewRoastsOfUser_whenUserExistThereAreNoRoasts_receiveOk() {
+		userService.save(TestUtil.createValidUser("user1"));
+		ResponseEntity<Object> response = getNewRoastsOfUser(5, "user1", new ParameterizedTypeReference<Object>() {});
+		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+	}
+	
+	@Test
+	public void getNewRoastsOfUser_whenUserExistAndThereAreRoasts_receiveListWithItemsAfterProvidedId() {
+		User user = userService.save(TestUtil.createValidUser("user1"));
+		roastService.save(user, TestUtil.createValidRoast());
+		roastService.save(user, TestUtil.createValidRoast());
+		roastService.save(user, TestUtil.createValidRoast());
+		Roast fourth = roastService.save(user, TestUtil.createValidRoast());
+		roastService.save(user, TestUtil.createValidRoast());
+		
+		ResponseEntity<List<Object>> response = getNewRoastsOfUser(fourth.getId(), "user1", new ParameterizedTypeReference<List<Object>>() {});
+		assertThat(response.getBody().size()).isEqualTo(1);
+	}
+	
+	@Test
+	public void getNewRoastsOfUser_whenUserExistAndThereAreRoasts_receiveListWithRoastVMAfterProvidedId() {
+		User user = userService.save(TestUtil.createValidUser("user1"));
+		roastService.save(user, TestUtil.createValidRoast());
+		roastService.save(user, TestUtil.createValidRoast());
+		roastService.save(user, TestUtil.createValidRoast());
+		Roast fourth = roastService.save(user, TestUtil.createValidRoast());
+		roastService.save(user, TestUtil.createValidRoast());
+		
+		ResponseEntity<List<RoastVM>> response = getNewRoastsOfUser(fourth.getId(), "user1", new ParameterizedTypeReference<List<RoastVM>>() {});
+		assertThat(response.getBody().get(0).getDate()).isGreaterThan(0);
+	}
+	
+
+	@Test
+	public void getNewRoastsOfUser_whenUserDoesNotExistThereAreNoRoasts_receiveNotFound() {
+		ResponseEntity<Object> response = getNewRoastsOfUser(5, "user1", new ParameterizedTypeReference<Object>() {});
+		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+	}
+
+	@Test
+	public void getNewRoastsOfUser_whenUserExistAndThereAreNoRoasts_receiveListWithZeroItemsAfterProvidedId() {
+		User user = userService.save(TestUtil.createValidUser("user1"));
+		roastService.save(user, TestUtil.createValidRoast());
+		roastService.save(user, TestUtil.createValidRoast());
+		roastService.save(user, TestUtil.createValidRoast());
+		Roast fourth = roastService.save(user, TestUtil.createValidRoast());
+		roastService.save(user, TestUtil.createValidRoast());
+		
+		userService.save(TestUtil.createValidUser("user2"));
+		
+		ResponseEntity<List<RoastVM>> response = getNewRoastsOfUser(fourth.getId(), "user2", new ParameterizedTypeReference<List<RoastVM>>() {});
+		assertThat(response.getBody().size()).isEqualTo(0);
+	}
+
+	@Test
+	public void getNewRoastCount_whenThereAreRoasts_receiveCountAfterProvidedId() {
+		User user = userService.save(TestUtil.createValidUser("user1"));
+		roastService.save(user, TestUtil.createValidRoast());
+		roastService.save(user, TestUtil.createValidRoast());
+		roastService.save(user, TestUtil.createValidRoast());
+		Roast fourth = roastService.save(user, TestUtil.createValidRoast());
+		roastService.save(user, TestUtil.createValidRoast());
+		
+		ResponseEntity<Map<String, Long>> response = getNewRoastCount(fourth.getId(), new ParameterizedTypeReference<Map<String, Long>>() {});
+		assertThat(response.getBody().get("count")).isEqualTo(1);
+	}
+
+
+	@Test
+	public void getNewRoastCountOfUser_whenThereAreRoasts_receiveCountAfterProvidedId() {
+		User user = userService.save(TestUtil.createValidUser("user1"));
+		roastService.save(user, TestUtil.createValidRoast());
+		roastService.save(user, TestUtil.createValidRoast());
+		roastService.save(user, TestUtil.createValidRoast());
+		Roast fourth = roastService.save(user, TestUtil.createValidRoast());
+		roastService.save(user, TestUtil.createValidRoast());
+		
+		ResponseEntity<Map<String, Long>> response = getNewRoastCountOfUser(fourth.getId(), "user1", new ParameterizedTypeReference<Map<String, Long>>() {});
+		assertThat(response.getBody().get("count")).isEqualTo(1);
+	}
+	
+	public <T> ResponseEntity<T> getNewRoastCount(long roastId, ParameterizedTypeReference<T> responseType){
+		String path = API_1_0_ROASTS + "/" + roastId +"?direction=after&count=true";
+		return testRestTemplate.exchange(path, HttpMethod.GET, null, responseType);
+	}
+	
+	public <T> ResponseEntity<T> getNewRoastCountOfUser(long roastId, String username, ParameterizedTypeReference<T> responseType){
+		String path = "/api/1.0/users/" + username + "/roasts/" + roastId +"?direction=after&count=true";
+		return testRestTemplate.exchange(path, HttpMethod.GET, null, responseType);
+	}
+	
+	public <T> ResponseEntity<T> getNewRoasts(long roastId, ParameterizedTypeReference<T> responseType){
+		String path = API_1_0_ROASTS + "/" + roastId +"?direction=after&sort=id,desc";
+		return testRestTemplate.exchange(path, HttpMethod.GET, null, responseType);
+	}
+
+	public <T> ResponseEntity<T> getNewRoastsOfUser(long roastId, String username, ParameterizedTypeReference<T> responseType){
+		String path = "/api/1.0/users/" + username + "/roasts/" + roastId +"?direction=after&sort=id,desc";
+		return testRestTemplate.exchange(path, HttpMethod.GET, null, responseType);
+	}
+	
+	
+	public <T> ResponseEntity<T> getOldRoasts(long roastId, ParameterizedTypeReference<T> responseType){
+		String path = API_1_0_ROASTS + "/" + roastId +"?direction=before&page=0&size=5&sort=id,desc";
+		return testRestTemplate.exchange(path, HttpMethod.GET, null, responseType);
+	}
+
+	public <T> ResponseEntity<T> getOldRoastsOfUser(long roastId, String username, ParameterizedTypeReference<T> responseType){
+		String path = "/api/1.0/users/" + username + "/roasts/" + roastId +"?direction=before&page=0&size=5&sort=id,desc";
+		return testRestTemplate.exchange(path, HttpMethod.GET, null, responseType);
+	}
 	
 	public <T> ResponseEntity<T> getRoasts(ParameterizedTypeReference<T> responseType){
 		return testRestTemplate.exchange(API_1_0_ROASTS, HttpMethod.GET, null, responseType);
