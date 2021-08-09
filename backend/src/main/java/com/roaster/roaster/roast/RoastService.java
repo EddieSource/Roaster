@@ -8,6 +8,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
+import com.roaster.roaster.file.FileAttachment;
+import com.roaster.roaster.file.FileAttachmentRepository;
 import com.roaster.roaster.user.User;
 import com.roaster.roaster.user.UserService;
 
@@ -15,15 +17,23 @@ import com.roaster.roaster.user.UserService;
 public class RoastService {
 	RoastRepository roastRepository;
 	UserService userService; 
-	public RoastService(RoastRepository roastRepository, UserService userService) {
+	FileAttachmentRepository fileAttachmentRepository; 
+	
+	public RoastService(RoastRepository roastRepository, UserService userService, FileAttachmentRepository fileAttachmentRepository) {
 		super();
 		this.roastRepository = roastRepository;
 		this.userService = userService; 
+		this.fileAttachmentRepository = fileAttachmentRepository; 
 	} 
 	
 	public Roast save(User user, Roast roast) {
 		roast.setTimestamp(new Date());
 		roast.setUser(user);
+		if(roast.getAttachment() != null) {
+			FileAttachment inDB = fileAttachmentRepository.findById(roast.getAttachment().getId()).get(); 
+			inDB.setRoast(roast);
+			roast.setAttachment(inDB);
+		}
 		return roastRepository.save(roast); 
 	}
 

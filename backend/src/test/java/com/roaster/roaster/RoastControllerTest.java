@@ -3,6 +3,8 @@ package com.roaster.roaster;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -12,7 +14,9 @@ import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.PersistenceUnit;
 
+import org.apache.commons.io.FileUtils;
 import org.junit.FixMethodOrder;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.runners.MethodSorters;
@@ -21,13 +25,20 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.support.BasicAuthenticationInterceptor;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.web.multipart.MultipartFile;
 
+import com.roaster.roaster.configuration.AppConfiguration;
 import com.roaster.roaster.error.ApiError;
+import com.roaster.roaster.file.FileAttachment;
+import com.roaster.roaster.file.FileAttachmentRepository;
+import com.roaster.roaster.file.FileService;
 import com.roaster.roaster.roast.Roast;
 import com.roaster.roaster.roast.RoastRepository;
 import com.roaster.roaster.roast.RoastService;
@@ -56,14 +67,25 @@ public class RoastControllerTest {
 	@Autowired
 	RoastService roastService; 
 	
+	@Autowired
+	FileAttachmentRepository fileAttachmentRepository; 
+	
+	@Autowired
+	FileService fileService; 
+	
+	@Autowired
+	AppConfiguration appConfiguration; 
+	
 	@PersistenceUnit
 	private EntityManagerFactory entityManagerFactory; 
 	
 	@BeforeEach
-	public void cleanup() {
+	public void cleanup() throws IOException {
+		fileAttachmentRepository.deleteAll();
 		roastRepository.deleteAll();
 		userRepository.deleteAll(); 	// delete all entries of users in database
 		testRestTemplate.getRestTemplate().getInterceptors().clear();
+		FileUtils.cleanDirectory(new File(appConfiguration.getFullAttachmentsPath()));
 	}
 	
 	@Test
@@ -198,6 +220,64 @@ public class RoastControllerTest {
 		Roast roast = TestUtil.createValidRoast();
 		ResponseEntity<RoastVM> response = postRoast(roast, RoastVM.class);
 		assertThat(response.getBody().getUser().getUsername()).isEqualTo("user1");
+	}
+	
+	@Test
+	public void postRoast_whenRoastHasFileAttachmentAndUserIsAuthorized_fileAttachmentRoastRelationIsUpdatedInDatabase() throws IOException {
+		userService.save(TestUtil.createValidUser("user1"));
+		authenticate("user1");
+		
+		MultipartFile file = createFile();
+		
+		FileAttachment savedFile = fileService.saveAttachment(file);
+		
+		Roast roast = TestUtil.createValidRoast();
+		roast.setAttachment(savedFile);
+		ResponseEntity<RoastVM> response = postRoast(roast, RoastVM.class);
+		
+		FileAttachment inDB = fileAttachmentRepository.findAll().get(0);
+		assertThat(inDB.getRoast().getId()).isEqualTo(response.getBody().getId());
+	}
+
+	@Test
+	public void postRoast_whenRoastHasFileAttachmentAndUserIsAuthorized_roastFileAttachmentRelationIsUpdatedInDatabase() throws IOException {
+		userService.save(TestUtil.createValidUser("user1"));
+		authenticate("user1");
+		
+		MultipartFile file = createFile();
+		
+		FileAttachment savedFile = fileService.saveAttachment(file);
+		
+		Roast roast = TestUtil.createValidRoast();
+		roast.setAttachment(savedFile);
+		ResponseEntity<RoastVM> response = postRoast(roast, RoastVM.class);
+		
+		Roast inDB = roastRepository.findById(response.getBody().getId()).get();
+		assertThat(inDB.getAttachment().getId()).isEqualTo(savedFile.getId());
+	}
+
+	@Test
+	public void postRoast_whenRoastHasFileAttachmentAndUserIsAuthorized_receiveRoastVMWithAttachment() throws IOException {
+		userService.save(TestUtil.createValidUser("user1"));
+		authenticate("user1");
+		
+		MultipartFile file = createFile();
+		
+		FileAttachment savedFile = fileService.saveAttachment(file);
+		
+		Roast roast = TestUtil.createValidRoast();
+		roast.setAttachment(savedFile);
+		ResponseEntity<RoastVM> response = postRoast(roast, RoastVM.class);
+		
+		assertThat(response.getBody().getAttachment().getName()).isEqualTo(savedFile.getName());
+	}
+
+	private MultipartFile createFile() throws IOException {
+		ClassPathResource imageResource = new ClassPathResource("profile.png");
+		byte[] fileAsByte = FileUtils.readFileToByteArray(imageResource.getFile());
+		
+		MultipartFile file = new MockMultipartFile("profile.png", fileAsByte);
+		return file;
 	}
 
 	
@@ -536,6 +616,12 @@ public class RoastControllerTest {
 	private void authenticate(String username) {
 		testRestTemplate.getRestTemplate()
 			.getInterceptors().add(new BasicAuthenticationInterceptor(username, "P4ssword"));
+	}
+	
+	@AfterEach
+	public void cleanupAfter() {
+		fileAttachmentRepository.deleteAll(); 
+		roastRepository.deleteAll();
 	}
 	
 	

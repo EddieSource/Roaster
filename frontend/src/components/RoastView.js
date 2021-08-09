@@ -8,6 +8,8 @@ const RoastView = (props) => {
   const { user, date } = roast;
   const { username, displayName, image } = user;
   const relativeData = format(date);
+  const attachmentImageVisible =
+    roast.attachment && roast.attachment.fileType.startsWith("image");
 
   return (
     <div className="card p-1">
@@ -33,6 +35,15 @@ const RoastView = (props) => {
         </div>
       </div>
       <div className="pl-5">{props.roast.content}</div>
+      {attachmentImageVisible && (
+        <div className="pl-5">
+          <img
+            alt="attachment"
+            src={`http://localhost:8080/images/attachments/${roast.attachment.name}`}
+            className="img-fluid"
+          />
+        </div>
+      )}
     </div>
   );
 };

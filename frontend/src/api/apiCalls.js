@@ -69,3 +69,7 @@ export const loadNewRoastCount = (roastId, username) => {
   const path = `${basePath}/${roastId}?direction=after&count=true`;
   return axios.get("http://localhost:8080" + path);
 };
+
+export const postRoastFile = (file) => {
+  return axios.post("http://localhost:8080/api/1.0/roasts/upload", file);
+};
