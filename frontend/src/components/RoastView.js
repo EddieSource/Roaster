@@ -2,14 +2,17 @@ import React from "react";
 import ProfileImageWithDefault from "./ProfileImageWithDefault";
 import { format } from "timeago.js";
 import { Link } from "react-router-dom";
+import { connect } from "react-redux";
 
 const RoastView = (props) => {
-  const { roast } = props;
+  const { roast, onClickDelete } = props;
   const { user, date } = roast;
   const { username, displayName, image } = user;
   const relativeData = format(date);
   const attachmentImageVisible =
     roast.attachment && roast.attachment.fileType.startsWith("image");
+
+  const ownedByLoggedinUser = user.id === props.loggedInUser.id;
 
   return (
     <div className="card p-1">
@@ -32,6 +35,14 @@ const RoastView = (props) => {
 
           <span className="text-black-50"> - </span>
           <span>{relativeData}</span>
+          {ownedByLoggedinUser && (
+            <button
+              className="btn btn-outline-danger btn-sm"
+              onClick={onClickDelete}
+            >
+              Delete
+            </button>
+          )}
         </div>
       </div>
       <div className="pl-5">{props.roast.content}</div>
@@ -39,7 +50,7 @@ const RoastView = (props) => {
         <div className="pl-5">
           <img
             alt="attachment"
-            src={`http://localhost:8080/images/attachments/${roast.attachment.name}`}
+            src={`http://localhost:8080/images/attachment/${roast.attachment.name}`}
             className="img-fluid"
           />
         </div>
@@ -47,4 +58,9 @@ const RoastView = (props) => {
     </div>
   );
 };
-export default RoastView;
+const mapStateToProps = (state) => {
+  return {
+    loggedInUser: state,
+  };
+};
+export default connect(mapStateToProps)(RoastView);

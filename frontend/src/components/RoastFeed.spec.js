@@ -8,6 +8,19 @@ import {
 import RoastFeed from "./RoastFeed";
 import * as apiCalls from "../api/apiCalls";
 import { MemoryRouter } from "react-router-dom";
+import authReducer from "../redux/authReducer";
+import { Provider } from "react-redux";
+import { createStore } from "redux";
+import * as authActions from "../redux/authActions";
+
+const loggedInStateUser1 = {
+  id: 1,
+  username: "user1",
+  displayName: "display1",
+  image: "profile1.png",
+  password: "P4ssword",
+  isLoggedIn: true,
+};
 
 const originalSetInterval = window.setInterval;
 const originalClearInterval = window.clearInterval;
@@ -37,11 +50,14 @@ const runTimer = () => {
   timedFunction && timedFunction();
 };
 
-const setup = (props) => {
+const setup = (props, state = loggedInStateUser1) => {
+  const store = createStore(authReducer, state);
   return render(
-    <MemoryRouter>
-      <RoastFeed {...props} />
-    </MemoryRouter>
+    <Provider store={store}>
+      <MemoryRouter>
+        <RoastFeed {...props} />
+      </MemoryRouter>
+    </Provider>
   );
 };
 
@@ -333,6 +349,187 @@ describe("RoastFeed", () => {
       expect(queryByText("Loading...")).not.toBeInTheDocument();
       expect(queryByText("There is 1 new roast")).not.toBeInTheDocument();
       useRealIntervals();
+    });
+    it("displays modal when clicking delete on roast", async () => {
+      apiCalls.loadRoasts = jest
+        .fn()
+        .mockResolvedValue(mockSuccessGetRoastsFirstOfMultiPage);
+      apiCalls.loadNewRoastCount = jest
+        .fn()
+        .mockResolvedValue({ data: { count: 1 } });
+      const { queryByTestId, container, findByText } = setup();
+      await findByText("This is the latest roast");
+      const deleteButton = container.querySelectorAll("button")[0];
+      fireEvent.click(deleteButton);
+
+      const modalRootDiv = queryByTestId("modal-root");
+      expect(modalRootDiv).toHaveClass("modal fade d-block show");
+    });
+    it("hides modal when clicking cancel", async () => {
+      apiCalls.loadRoasts = jest
+        .fn()
+        .mockResolvedValue(mockSuccessGetRoastsFirstOfMultiPage);
+      apiCalls.loadNewRoastCount = jest
+        .fn()
+        .mockResolvedValue({ data: { count: 1 } });
+      const { queryByTestId, container, queryByText, findByText } = setup();
+      await findByText("This is the latest roast");
+      const deleteButton = container.querySelectorAll("button")[0];
+      fireEvent.click(deleteButton);
+
+      fireEvent.click(queryByText("Cancel"));
+
+      const modalRootDiv = queryByTestId("modal-root");
+      expect(modalRootDiv).not.toHaveClass("d-block show");
+    });
+    it("displays modal with information about the action", async () => {
+      apiCalls.loadRoasts = jest
+        .fn()
+        .mockResolvedValue(mockSuccessGetRoastsFirstOfMultiPage);
+      apiCalls.loadNewRoastCount = jest
+        .fn()
+        .mockResolvedValue({ data: { count: 1 } });
+      const { container, queryByText, findByText } = setup();
+      await findByText("This is the latest roast");
+      const deleteButton = container.querySelectorAll("button")[0];
+      fireEvent.click(deleteButton);
+
+      const message = queryByText(
+        `Are you sure to delete 'This is the latest roast'?`
+      );
+      expect(message).toBeInTheDocument();
+    });
+    it("calls deleteRoast api with roast id when delete button is clicked on modal", async () => {
+      apiCalls.loadRoasts = jest
+        .fn()
+        .mockResolvedValue(mockSuccessGetRoastsFirstOfMultiPage);
+      apiCalls.loadNewRoastCount = jest
+        .fn()
+        .mockResolvedValue({ data: { count: 1 } });
+
+      apiCalls.deleteRoast = jest.fn().mockResolvedValue({});
+      const { container, queryByText, findByText } = setup();
+      await findByText("This is the latest roast");
+      const deleteButton = container.querySelectorAll("button")[0];
+      fireEvent.click(deleteButton);
+      const deleteRoastButton = queryByText("Delete Roast");
+      fireEvent.click(deleteRoastButton);
+      expect(apiCalls.deleteRoast).toHaveBeenCalledWith(10);
+    });
+    it("hides modal after successful deleteRoast api call", async () => {
+      apiCalls.loadRoasts = jest
+        .fn()
+        .mockResolvedValue(mockSuccessGetRoastsFirstOfMultiPage);
+      apiCalls.loadNewRoastCount = jest
+        .fn()
+        .mockResolvedValue({ data: { count: 1 } });
+
+      apiCalls.deleteRoast = jest.fn().mockResolvedValue({});
+      const { container, queryByText, queryByTestId, findByText } = setup();
+      await findByText("This is the latest roast");
+      const deleteButton = container.querySelectorAll("button")[0];
+      fireEvent.click(deleteButton);
+      const deleteRoastButton = queryByText("Delete Roast");
+      fireEvent.click(deleteRoastButton);
+      await waitFor(() => {
+        const modalRootDiv = queryByTestId("modal-root");
+        expect(modalRootDiv).not.toHaveClass("d-block show");
+      });
+    });
+    it("removes the deleted roast from document after successful deleteRoast api call", async () => {
+      apiCalls.loadRoasts = jest
+        .fn()
+        .mockResolvedValue(mockSuccessGetRoastsFirstOfMultiPage);
+      apiCalls.loadNewRoastCount = jest
+        .fn()
+        .mockResolvedValue({ data: { count: 1 } });
+
+      apiCalls.deleteRoast = jest.fn().mockResolvedValue({});
+      const { container, queryByText, findByText } = setup();
+      await findByText("This is the latest roast");
+      const deleteButton = container.querySelectorAll("button")[0];
+      fireEvent.click(deleteButton);
+      const deleteRoastButton = queryByText("Delete Roast");
+      fireEvent.click(deleteRoastButton);
+      await waitFor(() => {
+        const deletedRoastContent = queryByText("This is the latest roast");
+        expect(deletedRoastContent).not.toBeInTheDocument();
+      });
+    });
+    it("disables Modal Buttons when api call in progress", async () => {
+      apiCalls.loadRoasts = jest
+        .fn()
+        .mockResolvedValue(mockSuccessGetRoastsFirstOfMultiPage);
+      apiCalls.loadNewRoastCount = jest
+        .fn()
+        .mockResolvedValue({ data: { count: 1 } });
+
+      apiCalls.deleteRoast = jest.fn().mockImplementation(() => {
+        return new Promise((resolve, reject) => {
+          setTimeout(() => {
+            resolve({});
+          }, 300);
+        });
+      });
+      const { container, queryByText, findByText } = setup();
+      await findByText("This is the latest roast");
+      const deleteButton = container.querySelectorAll("button")[0];
+      fireEvent.click(deleteButton);
+      const deleteRoastButton = queryByText("Delete Roast");
+      fireEvent.click(deleteRoastButton);
+
+      expect(deleteRoastButton).toBeDisabled();
+      expect(queryByText("Cancel")).toBeDisabled();
+    });
+    it("displays spinner when api call in progress", async () => {
+      apiCalls.loadRoasts = jest
+        .fn()
+        .mockResolvedValue(mockSuccessGetRoastsFirstOfMultiPage);
+      apiCalls.loadNewRoastCount = jest
+        .fn()
+        .mockResolvedValue({ data: { count: 1 } });
+
+      apiCalls.deleteRoast = jest.fn().mockImplementation(() => {
+        return new Promise((resolve, reject) => {
+          setTimeout(() => {
+            resolve({});
+          }, 300);
+        });
+      });
+      const { container, queryByText, findByText } = setup();
+      await findByText("This is the latest roast");
+      const deleteButton = container.querySelectorAll("button")[0];
+      fireEvent.click(deleteButton);
+      const deleteRoastButton = queryByText("Delete Roast");
+      fireEvent.click(deleteRoastButton);
+      const spinner = queryByText("Loading...");
+      expect(spinner).toBeInTheDocument();
+    });
+    it("hides spinner when api call finishes", async () => {
+      apiCalls.loadRoasts = jest
+        .fn()
+        .mockResolvedValue(mockSuccessGetRoastsFirstOfMultiPage);
+      apiCalls.loadNewRoastCount = jest
+        .fn()
+        .mockResolvedValue({ data: { count: 1 } });
+
+      apiCalls.deleteRoast = jest.fn().mockImplementation(() => {
+        return new Promise((resolve, reject) => {
+          setTimeout(() => {
+            resolve({});
+          }, 300);
+        });
+      });
+      const { container, queryByText, findByText } = setup();
+      await findByText("This is the latest roast");
+      const deleteButton = container.querySelectorAll("button")[0];
+      fireEvent.click(deleteButton);
+      const deleteRoastButton = queryByText("Delete Roast");
+      fireEvent.click(deleteRoastButton);
+      await waitFor(() => {
+        const spinner = queryByText("Loading...");
+        expect(spinner).not.toBeInTheDocument();
+      });
     });
   });
 });

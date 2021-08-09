@@ -169,4 +169,13 @@ describe("apiCalls", () => {
       expect(path).toBe("http://localhost:8080/api/1.0/roasts/upload");
     });
   });
+  describe("deleteRoast", () => {
+    it("calls /api/1.0/roasts/5 when roast id param provided as 5", () => {
+      const mockDelete = jest.fn();
+      axios.delete = mockDelete;
+      apiCalls.deleteRoast(5);
+      const path = mockDelete.mock.calls[0][0];
+      expect(path).toBe("http://localhost:8080/api/1.0/roasts/5");
+    });
+  });
 });

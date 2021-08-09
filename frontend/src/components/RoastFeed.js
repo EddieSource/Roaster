@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import * as apiCalls from "../api/apiCalls";
 import Spinner from "./Spinner";
 import RoastView from "./RoastView";
+import Modal from "./Modal";
 
 const RoastFeed = (props) => {
   const [page, setPage] = useState({ content: [] });
@@ -9,6 +10,8 @@ const RoastFeed = (props) => {
   const [newRoastCount, setNewRoastCount] = useState(0);
   const [isLoadingNewRoasts, setIsLoadingNewRoasts] = useState(false);
   const [isLoadingOldRoasts, setIsLoadingOldRoasts] = useState(false);
+  const [roastToBeDeleted, setRoastToBeDeleted] = useState(undefined);
+  const [isDeletingRoast, setIsDeletingRoast] = useState(false);
 
   useEffect(() => {
     const checkCount = () => {
@@ -86,6 +89,20 @@ const RoastFeed = (props) => {
       });
   };
 
+  const onClickModalOk = () => {
+    setIsDeletingRoast(true);
+    apiCalls.deleteRoast(roastToBeDeleted.id).then((response) => {
+      setPage((previousPage) => ({
+        ...previousPage,
+        content: previousPage.content.filter(
+          (roast) => roast.id !== roastToBeDeleted.id
+        ),
+      }));
+      setRoastToBeDeleted(undefined);
+      setIsDeletingRoast(false);
+    });
+  };
+
   if (isLoadingRoasts) {
     return <Spinner />;
   }
@@ -113,7 +130,13 @@ const RoastFeed = (props) => {
         </div>
       )}
       {page.content.map((roast) => {
-        return <RoastView key={roast.id} roast={roast} />;
+        return (
+          <RoastView
+            key={roast.id}
+            roast={roast}
+            onClickDelete={() => setRoastToBeDeleted(roast)}
+          />
+        );
       })}
       {page.last === false && (
         <div
@@ -129,6 +152,18 @@ const RoastFeed = (props) => {
           There are no more roasts
         </div>
       )}
+      <Modal
+        visible={roastToBeDeleted && true}
+        onClickCancel={() => setRoastToBeDeleted()}
+        body={
+          roastToBeDeleted &&
+          `Are you sure to delete '${roastToBeDeleted.content}'?`
+        }
+        title="Delete!"
+        okButtonText="Delete Roast"
+        onClickOk={onClickModalOk}
+        pendingApiCall={isDeletingRoast}
+      />
     </div>
   );
 };

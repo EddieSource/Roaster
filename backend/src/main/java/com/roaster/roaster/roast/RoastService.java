@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import com.roaster.roaster.file.FileAttachment;
 import com.roaster.roaster.file.FileAttachmentRepository;
+import com.roaster.roaster.file.FileService;
 import com.roaster.roaster.user.User;
 import com.roaster.roaster.user.UserService;
 
@@ -18,12 +19,14 @@ public class RoastService {
 	RoastRepository roastRepository;
 	UserService userService; 
 	FileAttachmentRepository fileAttachmentRepository; 
+	FileService fileService; 
 	
-	public RoastService(RoastRepository roastRepository, UserService userService, FileAttachmentRepository fileAttachmentRepository) {
+	public RoastService(RoastRepository roastRepository, UserService userService, FileAttachmentRepository fileAttachmentRepository, FileService fileService) {
 		super();
 		this.roastRepository = roastRepository;
 		this.userService = userService; 
 		this.fileAttachmentRepository = fileAttachmentRepository; 
+		this.fileService = fileService; 
 	} 
 	
 	public Roast save(User user, Roast roast) {
@@ -90,5 +93,13 @@ public class RoastService {
 		return (root, query, criteriaBuilder) -> {
 			return criteriaBuilder.greaterThan(root.get("id"), id);
 		};
+	}
+	
+	public void deleteRoast(long id) {
+		Roast roast = roastRepository.getOne(id); 
+		if(roast.getAttachment() != null) {
+			fileService.deleteAttachmentImage(roast.getAttachment().getName());
+		}
+		roastRepository.deleteById(id);
 	}
 }

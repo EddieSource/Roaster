@@ -10,7 +10,6 @@ const RoastSubmit = (props) => {
   const [content, setContent] = useState(undefined);
   const [pendingApiCall, setPendingApiCall] = useState(false);
   const [errors, setErrors] = useState({});
-  const [file, setFile] = useState(undefined);
   const [image, setImage] = useState(undefined);
   const [attachment, setAttachment] = useState(undefined);
 
