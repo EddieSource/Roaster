@@ -10,7 +10,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -21,6 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.roaster.roaster.roast.vm.RoastVM;
 import com.roaster.roaster.shared.CurrentUser;
+import com.roaster.roaster.shared.GenericResponse;
 import com.roaster.roaster.user.User;
 
 @RestController
@@ -67,6 +70,12 @@ public class RoastController {
 		return ResponseEntity.ok(newRoasts);
 	}
 	
+	@DeleteMapping("/roasts/{id:[0-9]+}")
+	@PreAuthorize("@roastSecurityService.isAllowedToDelete(#id, principal)")
+	GenericResponse deleteRoast(@PathVariable long id) {
+		roastService.deleteRoast(id);
+		return new GenericResponse("Roast is removed"); 
+	}
 	
 	
 }

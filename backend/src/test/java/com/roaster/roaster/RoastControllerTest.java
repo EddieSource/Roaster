@@ -7,6 +7,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -43,6 +44,7 @@ import com.roaster.roaster.roast.Roast;
 import com.roaster.roaster.roast.RoastRepository;
 import com.roaster.roaster.roast.RoastService;
 import com.roaster.roaster.roast.vm.RoastVM;
+import com.roaster.roaster.shared.GenericResponse;
 import com.roaster.roaster.user.User;
 import com.roaster.roaster.user.UserRepository;
 import com.roaster.roaster.user.UserService;
@@ -566,6 +568,113 @@ public class RoastControllerTest {
 		
 		ResponseEntity<Map<String, Long>> response = getNewRoastCountOfUser(fourth.getId(), "user1", new ParameterizedTypeReference<Map<String, Long>>() {});
 		assertThat(response.getBody().get("count")).isEqualTo(1);
+	}
+	
+	@Test
+	public void deleteRoast_whenUserIsUnAuthorized_receiveUnauthorized() {
+		ResponseEntity<Object> response = deleteRoast(555, Object.class);
+		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
+	}
+	
+	@Test
+	public void deleteRoast_whenUserIsAuthorized_receiveOk() {
+		User user = userService.save(TestUtil.createValidUser("user1"));
+		authenticate("user1");
+		Roast roast = roastService.save(user, TestUtil.createValidRoast());
+
+		ResponseEntity<Object> response = deleteRoast(roast.getId(), Object.class);
+		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+		
+	}
+	
+	@Test
+	public void deleteRoast_whenUserIsAuthorized_receiveGenericResponse() {
+		User user = userService.save(TestUtil.createValidUser("user1"));
+		authenticate("user1");
+		Roast roast = roastService.save(user, TestUtil.createValidRoast());
+
+		ResponseEntity<GenericResponse> response = deleteRoast(roast.getId(), GenericResponse.class);
+		assertThat(response.getBody().getMessage()).isNotNull();
+		
+	}
+
+	@Test
+	public void deleteRoast_whenUserIsAuthorized_roastRemovedFromDatabase() {
+		User user = userService.save(TestUtil.createValidUser("user1"));
+		authenticate("user1");
+		Roast roast = roastService.save(user, TestUtil.createValidRoast());
+
+		deleteRoast(roast.getId(), Object.class);
+		Optional<Roast> inDB = roastRepository.findById(roast.getId());
+		assertThat(inDB.isPresent()).isFalse();
+		
+	}
+
+	@Test
+	public void deleteRoast_whenRoastIsOwnedByAnotherUser_receiveForbidden() {
+		userService.save(TestUtil.createValidUser("user1"));
+		authenticate("user1");
+		User roastOwner = userService.save(TestUtil.createValidUser("roast-owner"));
+		Roast roast = roastService.save(roastOwner, TestUtil.createValidRoast());
+
+		ResponseEntity<Object> response = deleteRoast(roast.getId(), Object.class);
+		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
+		
+	}
+
+	@Test
+	public void deleteRoast_whenRoastNotExist_receiveForbidden() {
+		userService.save(TestUtil.createValidUser("user1"));
+		authenticate("user1");
+		ResponseEntity<Object> response = deleteRoast(5555, Object.class);
+		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
+		
+	}
+
+	@Test
+	public void deleteRoast_whenRoastHasAttachment_attachmentRemovedFromDatabase() throws IOException {
+		userService.save(TestUtil.createValidUser("user1"));
+		authenticate("user1");
+		
+		MultipartFile file = createFile();
+		
+		FileAttachment savedFile = fileService.saveAttachment(file);
+		
+		Roast roast = TestUtil.createValidRoast();
+		roast.setAttachment(savedFile);
+		ResponseEntity<RoastVM> response = postRoast(roast, RoastVM.class);
+		
+		long roastId = response.getBody().getId();
+		
+		deleteRoast(roastId, Object.class);
+		
+		Optional<FileAttachment> optionalAttachment = fileAttachmentRepository.findById(savedFile.getId());
+		
+		assertThat(optionalAttachment.isPresent()).isFalse();
+	}
+
+	@Test
+	public void deleteRoast_whenRoastHasAttachment_attachmentRemovedFromStorage() throws IOException {
+		userService.save(TestUtil.createValidUser("user1"));
+		authenticate("user1");
+		
+		MultipartFile file = createFile();
+		
+		FileAttachment savedFile = fileService.saveAttachment(file);
+		
+		Roast roast = TestUtil.createValidRoast();
+		roast.setAttachment(savedFile);
+		ResponseEntity<RoastVM> response = postRoast(roast, RoastVM.class);
+		
+		long roastId = response.getBody().getId();
+		
+		deleteRoast(roastId, Object.class);
+		String attachmentFolderPath = appConfiguration.getFullAttachmentsPath() + "/" + savedFile.getName();
+		File storedImage = new File(attachmentFolderPath);
+		assertThat(storedImage.exists()).isFalse();
+	}
+	public <T> ResponseEntity<T> deleteRoast(long roastId, Class<T> responseType){
+		return testRestTemplate.exchange(API_1_0_ROASTS + "/" + roastId, HttpMethod.DELETE, null, responseType);
 	}
 	
 	public <T> ResponseEntity<T> getNewRoastCount(long roastId, ParameterizedTypeReference<T> responseType){

@@ -38,7 +38,7 @@ public class Roast {
 	@ManyToOne
 	private User user; 
 
-	@OneToOne(mappedBy="roast")
+	@OneToOne(mappedBy="roast", orphanRemoval = true)	// whenever the roast is deleted, the attachment will also be removed
 	private FileAttachment attachment; 
 	
 }
