@@ -38,6 +38,7 @@ const RoastSubmit = (props) => {
     const body = new FormData();
     body.append("file", updatedFile);
     apiCalls.postRoastFile(body).then((response) => {
+      console.log(response.data);
       setAttachment(response.data);
     });
   };
@@ -55,6 +56,7 @@ const RoastSubmit = (props) => {
       content: content,
       attachment: attachment,
     };
+    console.log(body);
     setPendingApiCall(true);
 
     apiCalls

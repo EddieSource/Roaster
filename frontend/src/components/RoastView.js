@@ -39,7 +39,7 @@ const RoastView = (props) => {
         <div className="pl-5">
           <img
             alt="attachment"
-            src={`http://localhost:8080/images/attachments/${roast.attachment.name}`}
+            src={`http://localhost:8080/images/attachment/${roast.attachment.name}`}
             className="img-fluid"
           />
         </div>

@@ -99,7 +99,7 @@ describe("RoastView", () => {
       const images = container.querySelectorAll("img");
       const attachmentImage = images[1];
       expect(attachmentImage.src).toContain(
-        "/images/attachments/" + roastWithAttachment.attachment.name
+        "/images//" + roastWithAttachment.attachment.name
       );
     });
   });
