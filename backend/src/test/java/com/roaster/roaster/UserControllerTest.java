@@ -157,6 +157,56 @@ public class UserControllerTest {
 		assertThat(response.getBody().getUrl()).isEqualTo(API_1_0_USERS); 
 	}
 	
+	@Test
+	public void postUser_whenUserHasUsernameExceedsTheLengthLimit_receiveBadRequest() {
+		User user = TestUtil.createValidUser();
+		String valueOf256Chars = IntStream.rangeClosed(1,256).mapToObj(x -> "a").collect(Collectors.joining());
+		user.setUsername(valueOf256Chars);
+		ResponseEntity<Object> response = postSignup(user, Object.class);
+		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+	}
+	
+	@Test
+	public void postUser_whenUserHasDisplayNameExceedsTheLengthLimit_receiveBadRequest() {
+		User user = TestUtil.createValidUser();
+		String valueOf256Chars = IntStream.rangeClosed(1,256).mapToObj(x -> "a").collect(Collectors.joining());
+		user.setDisplayName(valueOf256Chars);
+		ResponseEntity<Object> response = postSignup(user, Object.class);
+		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+	}
+	
+	@Test
+	public void postUser_whenUserHasPasswordExceedsTheLengthLimit_receiveBadRequest() {
+		User user = TestUtil.createValidUser();
+		String valueOf256Chars = IntStream.rangeClosed(1,256).mapToObj(x -> "a").collect(Collectors.joining());
+		user.setPassword(valueOf256Chars + "A1");
+		ResponseEntity<Object> response = postSignup(user, Object.class);
+		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+	}
+	
+	@Test
+	public void postUser_whenUserHasPasswordWithAllLowercase_receiveBadRequest() {
+		User user = TestUtil.createValidUser();
+		user.setPassword("alllowercase");
+		ResponseEntity<Object> response = postSignup(user, Object.class);
+		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+	}
+	
+	@Test
+	public void postUser_whenUserHasPasswordWithAllUppercase_receiveBadRequest() {
+		User user = TestUtil.createValidUser();
+		user.setPassword("ALLUPPERCASE");
+		ResponseEntity<Object> response = postSignup(user, Object.class);
+		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+	}
+	
+	@Test
+	public void postUser_whenUserHasPasswordWithAllNumber_receiveBadRequest() {
+		User user = TestUtil.createValidUser();
+		user.setPassword("123456789");
+		ResponseEntity<Object> response = postSignup(user, Object.class);
+		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+	}
 	
 	@Test
 	public void postUser_whenUserIsInvalid_receiveApiErrorWithValidationErrors() {

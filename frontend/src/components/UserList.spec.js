@@ -1,5 +1,5 @@
 import React from "react";
-import { render, fireEvent, waitFor } from "@testing-library/react";
+import { render, fireEvent } from "@testing-library/react";
 import UserList from "./UserList";
 import * as apiCalls from "../api/apiCalls";
 import { MemoryRouter } from "react-router-dom";

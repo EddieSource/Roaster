@@ -52,6 +52,7 @@ public class User implements UserDetails {
 	
 	@NotNull(message = "{roaster.constraints.password.NotNull.message}")
 	@Size(min = 8, max=255)
+	@Pattern(regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).*$", message="{roaster.constraints.password.Pattern.message}")
 	private String password;
 	
 	private String image; 
