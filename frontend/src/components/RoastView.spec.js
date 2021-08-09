@@ -2,12 +2,25 @@ import React from "react";
 import { render, fireEvent } from "@testing-library/react";
 import RoastView from "./RoastView";
 import { MemoryRouter } from "react-router-dom";
+import authReducer from "../redux/authReducer";
+import { Provider } from "react-redux";
+import { createStore } from "redux";
+import * as authActions from "../redux/authActions";
 
 const loggedInStateUser1 = {
   id: 1,
   username: "user1",
   displayName: "display1",
   image: "profile1.png",
+  password: "P4ssword",
+  isLoggedIn: true,
+};
+
+const loggedInStateUser2 = {
+  id: 2,
+  username: "user2",
+  displayName: "display2",
+  image: "profile2.png",
   password: "P4ssword",
   isLoggedIn: true,
 };
@@ -57,10 +70,14 @@ const setup = (roast = roastWithoutAttachment, state = loggedInStateUser1) => {
   const oneMinute = 60 * 1000;
   const date = new Date(new Date() - oneMinute);
   roast.date = date;
+  const store = createStore(authReducer, state);
+
   return render(
-    <MemoryRouter>
-      <RoastView roast={roast} />
-    </MemoryRouter>
+    <Provider store={store}>
+      <MemoryRouter>
+        <RoastView roast={roast} />
+      </MemoryRouter>
+    </Provider>
   );
 };
 
@@ -99,8 +116,12 @@ describe("RoastView", () => {
       const images = container.querySelectorAll("img");
       const attachmentImage = images[1];
       expect(attachmentImage.src).toContain(
-        "/images//" + roastWithAttachment.attachment.name
+        "/images/attachment/" + roastWithAttachment.attachment.name
       );
+    });
+    it("does not display delete button when roast is not owned by logged in user", () => {
+      const { container } = setup(roastWithoutAttachment, loggedInStateUser2);
+      expect(container.querySelector("button")).not.toBeInTheDocument();
     });
   });
 });

@@ -73,3 +73,7 @@ export const loadNewRoastCount = (roastId, username) => {
 export const postRoastFile = (file) => {
   return axios.post("http://localhost:8080/api/1.0/roasts/upload", file);
 };
+
+export const deleteRoast = (roastId) => {
+  return axios.delete("http://localhost:8080/api/1.0/roasts/" + roastId);
+};

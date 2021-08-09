@@ -401,30 +401,7 @@ describe("RoastSubmit", () => {
         expect(images.length).toBe(1);
       });
     });
-    // it("calls postRoastsFile when file selected", async () => {
-    //   apiCalls.postRoastsFile = jest.fn().mockResolvedValue({
-    //     data: {
-    //       id: 1,
-    //       name: "random-name.png",
-    //     },
-    //   });
 
-    //   const { container } = setupFocused();
-
-    //   const uploadInput = container.querySelector("input");
-    //   expect(uploadInput.type).toBe("file");
-
-    //   const file = new File(["dummy content"], "example.png", {
-    //     type: "image/png",
-    //   });
-    //   fireEvent.change(uploadInput, { target: { files: [file] } });
-
-    //   await waitFor(() => {
-    //     const images = container.querySelectorAll("img");
-    //     expect(images.length).toBe(2);
-    //   });
-    //   expect(apiCalls.postRoastsFile).toHaveBeenCalledTimes(1);
-    // });
     it("calls postRoastFile with selected file", async () => {
       apiCalls.postRoastFile = jest.fn().mockResolvedValue({
         data: {
