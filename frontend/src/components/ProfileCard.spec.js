@@ -37,3 +37,5 @@ describe("ProfileCard", () => {
     });
   });
 });
+
+console.error = () => {};

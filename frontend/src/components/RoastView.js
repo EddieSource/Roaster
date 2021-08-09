@@ -5,7 +5,7 @@ import { Link } from "react-router-dom";
 import { connect } from "react-redux";
 
 const RoastView = (props) => {
-  const { roast } = props;
+  const { roast, onClickDelete } = props;
   const { user, date } = roast;
   const { username, displayName, image } = user;
   const relativeData = format(date);
@@ -36,7 +36,12 @@ const RoastView = (props) => {
           <span className="text-black-50"> - </span>
           <span>{relativeData}</span>
           {ownedByLoggedinUser && (
-            <button className="btn btn-outline-danger btn-sm">Delete</button>
+            <button
+              className="btn btn-outline-danger btn-sm"
+              onClick={onClickDelete}
+            >
+              Delete
+            </button>
           )}
         </div>
       </div>

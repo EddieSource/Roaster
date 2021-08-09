@@ -29,3 +29,5 @@ describe("Layout", () => {
     expect(input.className).toBe("form-control-file");
   });
 });
+
+console.error = () => {};

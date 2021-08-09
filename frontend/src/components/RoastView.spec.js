@@ -123,5 +123,17 @@ describe("RoastView", () => {
       const { container } = setup(roastWithoutAttachment, loggedInStateUser2);
       expect(container.querySelector("button")).not.toBeInTheDocument();
     });
+    // it("does not show the dropdown menu when not clicked", () => {
+    //   const { queryByTestId } = setup();
+    //   const dropDownMenu = queryByTestId("roast-action-dropdown");
+    //   expect(dropDownMenu).not.toHaveClass("show");
+    // });
+    // it("shows the dropdown menu after clicking the indicator", () => {
+    //   const { queryByTestId } = setup();
+    //   const indicator = queryByTestId("roast-actions");
+    //   fireEvent.click(indicator);
+    //   const dropDownMenu = queryByTestId("roast-action-dropdown");
+    //   expect(dropDownMenu).toHaveClass("show");
+    // });
   });
 });
